@@ -2,8 +2,8 @@
 AprilBeacon BLE devices HomeAssistant .net core integration service
 
 AprilBeacon Bluetooth Low Enegry devices integration service.
-Works with OpenMQTTGateway that get advertising data from devices and publish it to MQTT-server
-So, my service listen target MQTT-topic, read raw-messages from devices then parse it and then resend message into MQTT-topic
+Works with OpenMQTTGateway that get advertising data from devices and publish it to MQTT-server.
+So, my service listen target MQTT-topic, read raw-messages from devices then parse it and then resend message into MQTT-topic.
 At the start, service send configuration message, to create devices in the HomeAssistant
 
 Support hardware:
