@@ -71,9 +71,8 @@ namespace AprilBeaconsHomeAssistantIntegrationService
             // subscribe for all devices
             await SubscribeToAllDevices(client);
 
-            // send device configuration every minute
-            var sendConfigurationTask = RunActionPeriodically(async () => { await SendSensorConfiguration(client); }, 60, stoppingToken);
-            await Task.Delay(1000); // wait for a second to send configuration info
+            // send device configuration with retain flag
+            await SendSensorConfiguration(client);
 
             Logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
 
@@ -140,7 +139,7 @@ namespace AprilBeaconsHomeAssistantIntegrationService
         }
 
         /// <summary>
-        /// send sensor configuration message to HomeAssistant
+        /// publish configuration message with retain flag to HomeAssistant
         /// </summary>
         /// <param name="client"></param>
         /// <returns></returns>
@@ -158,17 +157,8 @@ namespace AprilBeaconsHomeAssistantIntegrationService
 
                     var configurationTopic = $"homeassistant/sensor/{uniqueId}/config";
 
-                    await client.PublishAsync(configurationTopic, configurationPayload, MqttConfiguration.MqttQosLevel);
+                    await client.PublishAsync(configurationTopic, configurationPayload, MqttConfiguration.MqttQosLevel, true);
                 }
         }
-
-        private Task RunActionPeriodically(Func<Task> action, int secondsInterval, CancellationToken token) => Task.Run(async () =>
-            {
-                while (!token.IsCancellationRequested)
-                {
-                    await action();
-                    await Task.Delay(1000 * secondsInterval, token);
-                }
-            });
     }
 }
