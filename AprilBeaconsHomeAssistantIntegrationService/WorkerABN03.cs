@@ -71,8 +71,9 @@ namespace AprilBeaconsHomeAssistantIntegrationService
             // subscribe for all devices
             await SubscribeToAllDevices(client);
 
-            // send device configuration
-            await SendSensorConfiguration(client);
+            // send device configuration every minute
+            var sendConfigurationTask = RunActionPeriodically(async () => { await SendSensorConfiguration(client); }, 60, stoppingToken);
+            await Task.Delay(1000); // wait for a second to send configuration info
 
             Logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
 
@@ -160,5 +161,14 @@ namespace AprilBeaconsHomeAssistantIntegrationService
                     await client.PublishAsync(configurationTopic, configurationPayload, MqttConfiguration.MqttQosLevel);
                 }
         }
+
+        private Task RunActionPeriodically(Func<Task> action, int secondsInterval, CancellationToken token) => Task.Run(async () =>
+            {
+                while (!token.IsCancellationRequested)
+                {
+                    await action();
+                    await Task.Delay(1000 * secondsInterval, token);
+                }
+            });
     }
 }
