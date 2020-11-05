@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MQTTnet;
@@ -17,14 +16,9 @@ namespace AprilBeaconsHomeAssistantIntegrationService
     /// see documentation of the N03 April Beacon device
     /// https://wiki.aprbrother.com/en/ABSensor.html#absensor-n03
     /// </summary>
-    public class WorkerABN03 : BackgroundService, IMqttSubscriber
+    public class WorkerABN03 : WorkerWithSensorsBase<WorkerABN03>
     {
-        protected ILogger<WorkerABN03> Logger { get; }
-        protected MqttConfiguration MqttConfiguration { get; }
-        protected ProgramConfiguration ProgramConfiguration { get; set; }
-        protected IMqttClientForMultipleSubscribers MqttClient { get; set; }
-
-        protected List<Sensor> SensorsList { get; } = new List<Sensor>
+        protected override List<Sensor> SensorsList { get; } = new List<Sensor>
         {
             new Sensor { NamePattern = "ABN03_tem", UniqueIdPattern = "{0}-ABN03-tem", Class = "temperature", Value = "temp", Unit = "C" },
             new Sensor { NamePattern = "ABN03_hum", UniqueIdPattern = "{0}-ABN03-hum", Class = "humidity", Value = "hum", Unit = "%" },
@@ -33,56 +27,13 @@ namespace AprilBeaconsHomeAssistantIntegrationService
         };
 
         public WorkerABN03(ILogger<WorkerABN03> logger, IOptions<MqttConfiguration> mqttConfiguration, IOptions<ProgramConfiguration> programConfiguration, IMqttClientForMultipleSubscribers mqttClient)
+            : base(logger, mqttConfiguration, programConfiguration, mqttClient) { }
+
+        protected override async Task PostExecuteAsync(CancellationToken stoppingToken)
         {
-            Logger = logger;
-            MqttConfiguration = mqttConfiguration.Value;
-            ProgramConfiguration = programConfiguration.Value;
-            MqttClient = mqttClient;
-        }
-
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            // subscribe for all devices
-            await SubscribeToAllDevices();
-
-            // send device configuration with retain flag
-            await SendSensorConfiguration();
-
-            Logger.LogInformation("WorkerABN03 running at: {time}", DateTimeOffset.Now);
-
-            while (!stoppingToken.IsCancellationRequested)
-                await Task.Delay(1000, stoppingToken);
-
-            Logger.LogInformation("WorkerABN03 stopping at: {time}", DateTimeOffset.Now);
-        }
-
-        private async Task SubscribeToAllDevices()
-        {
+            // subscribe to all devices raw-messages
             foreach (var device in ProgramConfiguration.AprilBeaconDevicesList)
                 await MqttClient.SubscribeAsync(this, $"{MqttConfiguration.TopicBase}/{device}", MqttConfiguration.MqttQosLevel);
-        }
-
-        /// <summary>
-        /// publish configuration message with retain flag to HomeAssistant
-        /// </summary>
-        /// <param name="client"></param>
-        /// <returns></returns>
-        private async Task SendSensorConfiguration()
-        {
-            foreach (var device in ProgramConfiguration.AprilBeaconDevicesList)
-                foreach (var sensor in SensorsList)
-                {
-                    var name = string.Format(sensor.NamePattern, device);
-                    var uniqueId = string.Format(sensor.UniqueIdPattern, device);
-
-                    var configurationPayload = $"{{\"stat_t\":\"{MqttConfiguration.TopicBase}/{device}\"," +
-                        $"\"name\":\"{name}\",\"uniq_id\":\"{uniqueId}\",\"dev_cla\":\"{sensor.Class}\"," +
-                        $"\"val_tpl\":\"{{{{ value_json.{sensor.Value} | is_defined }}}}\",\"unit_of_meas\":\"{sensor.Unit}\"}}";
-
-                    var configurationTopic = $"homeassistant/sensor/{uniqueId}/config";
-
-                    await MqttClient.PublishAsync(configurationTopic, configurationPayload, MqttConfiguration.MqttQosLevel, true);
-                }
         }
 
         /// <summary>
@@ -90,7 +41,7 @@ namespace AprilBeaconsHomeAssistantIntegrationService
         /// </summary>
         /// <param name="e"></param>
         /// <returns></returns>
-        public async Task MqttReceiveHandler(MqttApplicationMessageReceivedEventArgs e)
+        public override async Task MqttReceiveHandler(MqttApplicationMessageReceivedEventArgs e)
         {
             try
             {
