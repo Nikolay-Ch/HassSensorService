@@ -2,8 +2,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MQTTnet;
-using MQTTnet.Client.Options;
-using MQTTnet.Extensions.ManagedClient;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -19,11 +17,12 @@ namespace AprilBeaconsHomeAssistantIntegrationService
     /// see documentation of the N03 April Beacon device
     /// https://wiki.aprbrother.com/en/ABSensor.html#absensor-n03
     /// </summary>
-    public class WorkerABN03 : BackgroundService
+    public class WorkerABN03 : BackgroundService, IMqttSubscriber
     {
         protected ILogger<WorkerABN03> Logger { get; }
         protected MqttConfiguration MqttConfiguration { get; }
         protected ProgramConfiguration ProgramConfiguration { get; set; }
+        protected IMqttClientForMultipleSubscribers MqttClient { get; set; }
 
         protected List<Sensor> SensorsList { get; } = new List<Sensor>
         {
@@ -33,56 +32,65 @@ namespace AprilBeaconsHomeAssistantIntegrationService
             new Sensor { NamePattern = "ABN03_batt", UniqueIdPattern = "{0}-ABN03-batt", Class = "battery", Value = "batt", Unit = "%" },
         };
 
-        public WorkerABN03(ILogger<WorkerABN03> logger, IOptions<MqttConfiguration> mqttConfiguration, IOptions<ProgramConfiguration> programConfiguration)
+        public WorkerABN03(ILogger<WorkerABN03> logger, IOptions<MqttConfiguration> mqttConfiguration, IOptions<ProgramConfiguration> programConfiguration, IMqttClientForMultipleSubscribers mqttClient)
         {
             Logger = logger;
             MqttConfiguration = mqttConfiguration.Value;
             ProgramConfiguration = programConfiguration.Value;
+            MqttClient = mqttClient;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var messageBuilder = new MqttClientOptionsBuilder()
-                .WithClientId(MqttConfiguration.ClientId)
-                .WithCredentials(MqttConfiguration.MqttUser, MqttConfiguration.MqttUserPassword)
-                .WithTcpServer(MqttConfiguration.MqttUri, MqttConfiguration.MqttPort)
-                .WithCleanSession();
-
-            var options = MqttConfiguration.MqttSecure ?
-                messageBuilder.WithTls().Build() :
-                messageBuilder.Build();
-
-            var managedOptions = new ManagedMqttClientOptionsBuilder()
-                .WithAutoReconnectDelay(TimeSpan.FromSeconds(5))
-                .WithClientOptions(options)
-                .Build();
-
-            var client = new MqttFactory()
-                .CreateManagedMqttClient();
-
-            await client.StartAsync(managedOptions);
-
-            // wait for connection
-            while (!client.IsConnected)
-                Thread.Sleep(1000);
-
-            client.UseApplicationMessageReceivedHandler(async e => await ConvertSensorDataToHomeAssistant(e, client));
-
             // subscribe for all devices
-            await SubscribeToAllDevices(client);
+            await SubscribeToAllDevices();
 
             // send device configuration with retain flag
-            await SendSensorConfiguration(client);
+            await SendSensorConfiguration();
 
-            Logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+            Logger.LogInformation("WorkerABN03 running at: {time}", DateTimeOffset.Now);
 
             while (!stoppingToken.IsCancellationRequested)
                 await Task.Delay(1000, stoppingToken);
 
-            Logger.LogInformation("Worker stopping at: {time}", DateTimeOffset.Now);
+            Logger.LogInformation("WorkerABN03 stopping at: {time}", DateTimeOffset.Now);
         }
 
-        private async Task ConvertSensorDataToHomeAssistant(MqttApplicationMessageReceivedEventArgs e, IManagedMqttClient client)
+        private async Task SubscribeToAllDevices()
+        {
+            foreach (var device in ProgramConfiguration.AprilBeaconDevicesList)
+                await MqttClient.SubscribeAsync(this, $"{MqttConfiguration.TopicBase}/{device}", MqttConfiguration.MqttQosLevel);
+        }
+
+        /// <summary>
+        /// publish configuration message with retain flag to HomeAssistant
+        /// </summary>
+        /// <param name="client"></param>
+        /// <returns></returns>
+        private async Task SendSensorConfiguration()
+        {
+            foreach (var device in ProgramConfiguration.AprilBeaconDevicesList)
+                foreach (var sensor in SensorsList)
+                {
+                    var name = string.Format(sensor.NamePattern, device);
+                    var uniqueId = string.Format(sensor.UniqueIdPattern, device);
+
+                    var configurationPayload = $"{{\"stat_t\":\"{MqttConfiguration.TopicBase}/{device}\"," +
+                        $"\"name\":\"{name}\",\"uniq_id\":\"{uniqueId}\",\"dev_cla\":\"{sensor.Class}\"," +
+                        $"\"val_tpl\":\"{{{{ value_json.{sensor.Value} | is_defined }}}}\",\"unit_of_meas\":\"{sensor.Unit}\"}}";
+
+                    var configurationTopic = $"homeassistant/sensor/{uniqueId}/config";
+
+                    await MqttClient.PublishAsync(configurationTopic, configurationPayload, MqttConfiguration.MqttQosLevel, true);
+                }
+        }
+
+        /// <summary>
+        /// Try to convert sensor raw-data to parsed data used in HomeAssistant
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        public async Task MqttReceiveHandler(MqttApplicationMessageReceivedEventArgs e)
         {
             try
             {
@@ -122,43 +130,14 @@ namespace AprilBeaconsHomeAssistantIntegrationService
                 payload = payloadObj.ToString();
 
                 // send message
-                await client.PublishAsync(e.ApplicationMessage.Topic, payload, MqttConfiguration.MqttQosLevel);
+                await MqttClient.PublishAsync(e.ApplicationMessage.Topic, payload, MqttConfiguration.MqttQosLevel);
 
-                Logger.LogInformation("Worker send message: {0}", payload);
+                Logger.LogInformation("WorkerABN03 send message: {0}", payload);
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Worker error");
+                Logger.LogError(ex, "WorkerABN03 error");
             }
-        }
-
-        private async Task SubscribeToAllDevices(IManagedMqttClient client)
-        {
-            foreach (var device in ProgramConfiguration.AprilBeaconDevicesList)
-                await client.SubscribeAsync($"{MqttConfiguration.TopicBase}/{device}", MqttConfiguration.MqttQosLevel);
-        }
-
-        /// <summary>
-        /// publish configuration message with retain flag to HomeAssistant
-        /// </summary>
-        /// <param name="client"></param>
-        /// <returns></returns>
-        private async Task SendSensorConfiguration(IManagedMqttClient client)
-        {
-            foreach (var device in ProgramConfiguration.AprilBeaconDevicesList)
-                foreach (var sensor in SensorsList)
-                {
-                    var name = string.Format(sensor.NamePattern, device);
-                    var uniqueId = string.Format(sensor.UniqueIdPattern, device);
-
-                    var configurationPayload = $"{{\"stat_t\":\"{MqttConfiguration.TopicBase}/{device}\"," +
-                        $"\"name\":\"{name}\",\"uniq_id\":\"{uniqueId}\",\"dev_cla\":\"{sensor.Class}\"," +
-                        $"\"val_tpl\":\"{{{{ value_json.{sensor.Value} | is_defined }}}}\",\"unit_of_meas\":\"{sensor.Unit}\"}}";
-
-                    var configurationTopic = $"homeassistant/sensor/{uniqueId}/config";
-
-                    await client.PublishAsync(configurationTopic, configurationPayload, MqttConfiguration.MqttQosLevel, true);
-                }
         }
     }
 }
