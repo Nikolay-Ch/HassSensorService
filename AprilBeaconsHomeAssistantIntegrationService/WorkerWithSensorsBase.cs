@@ -17,6 +17,11 @@ namespace AprilBeaconsHomeAssistantIntegrationService
         protected ProgramConfiguration ProgramConfiguration { get; set; }
         protected IMqttClientForMultipleSubscribers MqttClient { get; set; }
 
+        // service tasks, that we start to work
+        protected List<Task> WorkingTasks { get; set; } = new List<Task>();
+
+        protected virtual List<string> Devices { get; } = new List<string>();
+
         protected virtual List<Sensor> SensorsList { get; } = new List<Sensor>();
 
         protected virtual string HomeAssistantDeviceConfigurationTopicPattern => "homeassistant/sensor/{0}/config";
@@ -47,6 +52,9 @@ namespace AprilBeaconsHomeAssistantIntegrationService
             while (!stoppingToken.IsCancellationRequested)
                 await Task.Delay(1000, stoppingToken);
 
+            // wait to all work tasks finished
+            Task.WaitAll(WorkingTasks.ToArray(), 5000);
+
             Logger.LogInformation($"{typeof(T).Name} stopping at: {{time}}", DateTimeOffset.Now);
         }
 
@@ -61,27 +69,28 @@ namespace AprilBeaconsHomeAssistantIntegrationService
         /// <returns></returns>
         protected virtual async Task SendSensorConfiguration()
         {
-            foreach (var device in ProgramConfiguration.AprilBeaconDevicesList)
+            foreach (var deviceId in Devices)
                 foreach (var sensor in SensorsList)
-                {
-                    var name = string.Format(sensor.NamePattern, device);
-                    var uniqueId = string.Format(sensor.UniqueIdPattern, device);
-
-                    var configurationPayload = JObject.FromObject(new
-                    {
-                        stat_t = $"{MqttConfiguration.TopicBase}/{device}",
-                        name,
-                        uniq_id = uniqueId,
-                        dev_cla = sensor.Class,
-                        val_tpl = $"{{{{ value_json.{sensor.Value} | is_defined }}}}",
-                        unit_of_meas = sensor.Unit
-                    });
-
                     await MqttClient.PublishAsync(
-                        String.Format(HomeAssistantDeviceConfigurationTopicPattern, uniqueId),
-                        configurationPayload.ToString(),
-                        MqttConfiguration.MqttQosLevel, true);
-                }
+                        string.Format(HomeAssistantDeviceConfigurationTopicPattern, GetSensorUniqueId(deviceId, sensor)),
+                        GetSensorConfigurationPayload(deviceId, sensor).ToString(),
+                        MqttConfiguration.MqttQosLevel,
+                        true);
         }
+
+        protected virtual JObject GetSensorConfigurationPayload(string deviceId, Sensor sensor) =>
+            JObject.FromObject(new
+            {
+                stat_t = $"{MqttConfiguration.TopicBase}/{deviceId}",
+                name = GetSensorName(deviceId, sensor),
+                uniq_id = GetSensorUniqueId(deviceId, sensor),
+                dev_cla = sensor.Class,
+                val_tpl = $"{{{{ value_json.{sensor.Value} | is_defined }}}}",
+                unit_of_meas = sensor.Unit
+            });
+
+        protected virtual string GetSensorName(string deviceId, Sensor sensor) => string.Format(sensor.Name, deviceId);
+
+        protected virtual string GetSensorUniqueId(string deviceId, Sensor sensor) => string.Format(sensor.UniqueId, deviceId);
     }
 }

@@ -18,12 +18,14 @@ namespace AprilBeaconsHomeAssistantIntegrationService
     /// </summary>
     public class WorkerABN03 : WorkerWithSensorsBase<WorkerABN03>
     {
+        protected override List<string> Devices => ProgramConfiguration.AprilBeaconDevicesList;
+
         protected override List<Sensor> SensorsList { get; } = new List<Sensor>
         {
-            new Sensor { NamePattern = "ABN03_tem", UniqueIdPattern = "{0}-ABN03-tem", Class = "temperature", Value = "temp", Unit = "C" },
-            new Sensor { NamePattern = "ABN03_hum", UniqueIdPattern = "{0}-ABN03-hum", Class = "humidity", Value = "hum", Unit = "%" },
-            new Sensor { NamePattern = "ABN03_lux", UniqueIdPattern = "{0}-ABN03-lux", Class = "illuminance", Value = "lux", Unit = "lx" },
-            new Sensor { NamePattern = "ABN03_batt", UniqueIdPattern = "{0}-ABN03-batt", Class = "battery", Value = "batt", Unit = "%" },
+            new Sensor { Name = "ABN03_tem", UniqueId = "{0}-ABN03-tem", Class = "temperature", Value = "temp", Unit = "C" },
+            new Sensor { Name = "ABN03_hum", UniqueId = "{0}-ABN03-hum", Class = "humidity", Value = "hum", Unit = "%" },
+            new Sensor { Name = "ABN03_lux", UniqueId = "{0}-ABN03-lux", Class = "illuminance", Value = "lux", Unit = "lx" },
+            new Sensor { Name = "ABN03_batt", UniqueId = "{0}-ABN03-batt", Class = "battery", Value = "batt", Unit = "%" },
         };
 
         public WorkerABN03(ILogger<WorkerABN03> logger, IOptions<MqttConfiguration> mqttConfiguration, IOptions<ProgramConfiguration> programConfiguration, IMqttClientForMultipleSubscribers mqttClient)
