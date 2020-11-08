@@ -24,7 +24,7 @@ namespace AprilBeaconsHomeAssistantIntegrationService
 
         protected virtual List<Sensor> SensorsList { get; } = new List<Sensor>();
 
-        protected virtual string HomeAssistantDeviceConfigurationTopicPattern => "homeassistant/sensor/{0}/config";
+        protected virtual string HomeAssistantDeviceConfigurationTopicPattern => "homeassistant/{0}/{1}/config";
 
         public virtual async Task MqttReceiveHandler(MqttApplicationMessageReceivedEventArgs e) =>
             await Task.CompletedTask;
@@ -72,7 +72,7 @@ namespace AprilBeaconsHomeAssistantIntegrationService
             foreach (var deviceId in Devices)
                 foreach (var sensor in SensorsList)
                     await MqttClient.PublishAsync(
-                        string.Format(HomeAssistantDeviceConfigurationTopicPattern, GetSensorUniqueId(deviceId, sensor)),
+                        string.Format(HomeAssistantDeviceConfigurationTopicPattern, sensor.Category, GetSensorUniqueId(deviceId, sensor)),
                         GetSensorConfigurationPayload(deviceId, sensor).ToString(),
                         MqttConfiguration.MqttQosLevel,
                         true);
@@ -85,8 +85,9 @@ namespace AprilBeaconsHomeAssistantIntegrationService
                 name = GetSensorName(deviceId, sensor),
                 uniq_id = GetSensorUniqueId(deviceId, sensor),
                 dev_cla = sensor.Class,
-                val_tpl = $"{{{{ value_json.{sensor.Value} | is_defined }}}}",
-                unit_of_meas = sensor.Unit
+                val_tpl = $"{{{{ value_json.{sensor.ValueName} | is_defined }}}}",
+                unit_of_meas = sensor.Unit,
+                ic = sensor.SensorIcon
             });
 
         protected virtual string GetSensorName(string deviceId, Sensor sensor) => string.Format(sensor.Name, deviceId);

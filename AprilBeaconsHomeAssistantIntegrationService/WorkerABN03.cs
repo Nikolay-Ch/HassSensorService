@@ -22,10 +22,10 @@ namespace AprilBeaconsHomeAssistantIntegrationService
 
         protected override List<Sensor> SensorsList { get; } = new List<Sensor>
         {
-            new Sensor { Name = "ABN03_tem", UniqueId = "{0}-ABN03-tem", Class = "temperature", Value = "temp", Unit = "C" },
-            new Sensor { Name = "ABN03_hum", UniqueId = "{0}-ABN03-hum", Class = "humidity", Value = "hum", Unit = "%" },
-            new Sensor { Name = "ABN03_lux", UniqueId = "{0}-ABN03-lux", Class = "illuminance", Value = "lux", Unit = "lx" },
-            new Sensor { Name = "ABN03_batt", UniqueId = "{0}-ABN03-batt", Class = "battery", Value = "batt", Unit = "%" },
+            new Sensor { Name = "ABN03_tem", UniqueId = "{0}-ABN03-tem", Class = "temperature", Category = SensorCategory.sensor, ValueName = "temp", Unit = "C" },
+            new Sensor { Name = "ABN03_hum", UniqueId = "{0}-ABN03-hum", Class = "humidity", Category = SensorCategory.sensor, ValueName = "hum", Unit = "%" },
+            new Sensor { Name = "ABN03_lux", UniqueId = "{0}-ABN03-lux", Class = "illuminance", Category = SensorCategory.sensor, ValueName = "lux", Unit = "lx" },
+            new Sensor { Name = "ABN03_batt", UniqueId = "{0}-ABN03-batt", Class = "battery", Category = SensorCategory.sensor, ValueName = "batt", Unit = "%" },
         };
 
         public WorkerABN03(ILogger<WorkerABN03> logger, IOptions<MqttConfiguration> mqttConfiguration, IOptions<ProgramConfiguration> programConfiguration, IMqttClientForMultipleSubscribers mqttClient)
@@ -75,7 +75,7 @@ namespace AprilBeaconsHomeAssistantIntegrationService
 
                 // add values into json
                 foreach (var sensor in SensorsList)
-                    payloadObj.Add(sensor.Value, JToken.FromObject(vals[sensor]));
+                    payloadObj.Add(sensor.ValueName, JToken.FromObject(vals[sensor]));
 
                 // delete serviceData key, to avoid re-processing of the message
                 payloadObj.Remove("servicedata");
