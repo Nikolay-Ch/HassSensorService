@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MQTTnet;
 using MQTTnet.Client.Options;
@@ -8,6 +7,7 @@ using MQTTnet.Protocol;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,7 +16,7 @@ namespace AprilBeaconsHomeAssistantIntegrationService
     public interface IMqttClientForMultipleSubscribers
     {
         Task PublishAsync(string topic, string payload, MqttQualityOfServiceLevel mqttQosLevel);
-        Task PublishAsync(string configurationTopic, string configurationPayload, MqttQualityOfServiceLevel mqttQosLevel, bool v);
+        Task PublishAsync(string configurationTopic, string configurationPayload, MqttQualityOfServiceLevel mqttQosLevel, bool retain);
         Task SubscribeAsync(IMqttSubscriber subscriber, string v, MqttQualityOfServiceLevel mqttQosLevel);
     }
 
@@ -72,13 +72,9 @@ namespace AprilBeaconsHomeAssistantIntegrationService
         {
             foreach(var topicSubscribers in Subscribers)
             {
-                var topicValue =
-                    topicSubscribers.Key.EndsWith("#") ?
-                        topicSubscribers.Key.Remove(topicSubscribers.Key.Length - 1) :
-                        topicSubscribers.Key;
-
                 // call each subscriber, that topic correspond to received message topic
-                if (e.ApplicationMessage.Topic.StartsWith(topicValue))
+                var pattern = "^" + topicSubscribers.Key.Replace("+", ".*") + "$";
+                if (Regex.IsMatch(e.ApplicationMessage.Topic, pattern))
                     foreach (var subscriber in topicSubscribers.Value)
                         await subscriber.MqttReceiveHandler(e);
             }

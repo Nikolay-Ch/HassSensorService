@@ -20,5 +20,7 @@ namespace AprilBeaconsHomeAssistantIntegrationService
         public bool MqttSecure { get; set; } = false;
         public MqttQualityOfServiceLevel MqttQosLevel { get; set; } = MqttQualityOfServiceLevel.AtMostOnce;
         public string TopicBase { get; set; }
+        public string TopicToSubscribe { get; set; }
+        public string ConfigurationTopic { get; set; }
     }
 }

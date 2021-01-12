@@ -20,22 +20,39 @@ namespace AprilBeaconsHomeAssistantIntegrationService
     {
         protected override List<string> Devices => ProgramConfiguration.AprilBeaconDevicesList;
 
-        protected override List<Sensor> SensorsList { get; } = new List<Sensor>
-        {
-            new Sensor { Name = "ABN03_tem", UniqueId = "{0}-ABN03-tem", Class = "temperature", Category = SensorCategory.sensor, ValueName = "temp", Unit = "C" },
-            new Sensor { Name = "ABN03_hum", UniqueId = "{0}-ABN03-hum", Class = "humidity", Category = SensorCategory.sensor, ValueName = "hum", Unit = "%" },
-            new Sensor { Name = "ABN03_lux", UniqueId = "{0}-ABN03-lux", Class = "illuminance", Category = SensorCategory.sensor, ValueName = "lux", Unit = "lx" },
-            new Sensor { Name = "ABN03_batt", UniqueId = "{0}-ABN03-batt", Class = "battery", Category = SensorCategory.sensor, ValueName = "batt", Unit = "%" },
-        };
+        protected override List<Sensor> SensorsList { get; }
 
         public WorkerABN03(ILogger<WorkerABN03> logger, IOptions<MqttConfiguration> mqttConfiguration, IOptions<ProgramConfiguration> programConfiguration, IMqttClientForMultipleSubscribers mqttClient)
-            : base(logger, mqttConfiguration, programConfiguration, mqttClient) { }
+            : base(logger, mqttConfiguration, programConfiguration, mqttClient)
+        {
+            SensorsList = new List<Sensor>
+            {
+                new Sensor { SensorClass = SensorClass.temperature,
+                    Device = new Device{ Name = "ABN03", Model = "ABSensor N03", Manufacturer = "April Brother", ViaDevice = ProgramConfiguration.ServiceName } },
+
+                new Sensor { SensorClass = SensorClass.humidity,
+                    Device = new Device{ Name = "ABN03", Model = "ABSensor N03", Manufacturer = "April Brother", ViaDevice = ProgramConfiguration.ServiceName } },
+
+                new Sensor { SensorClass = SensorClass.illuminance,
+                    Device = new Device{ Name = "ABN03", Model = "ABSensor N03", Manufacturer = "April Brother", ViaDevice = ProgramConfiguration.ServiceName } },
+
+                new Sensor { SensorClass = SensorClass.battery,
+                    Device = new Device{ Name = "ABN03", Model = "ABSensor N03", Manufacturer = "April Brother", ViaDevice = ProgramConfiguration.ServiceName } }
+            };
+        }
 
         protected override async Task PostExecuteAsync(CancellationToken stoppingToken)
         {
-            // subscribe to all devices raw-messages
-            foreach (var device in ProgramConfiguration.AprilBeaconDevicesList)
-                await MqttClient.SubscribeAsync(this, $"{MqttConfiguration.TopicBase}/{device}", MqttConfiguration.MqttQosLevel);
+            try
+            {
+                // subscribe to all devices raw-messages
+                foreach (var device in ProgramConfiguration.AprilBeaconDevicesList)
+                    await MqttClient.SubscribeAsync(this, $"{MqttConfiguration.TopicToSubscribe}/{device}", MqttConfiguration.MqttQosLevel);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"WorkerABN03 error at {DateTimeOffset.Now}");
+            }
         }
 
         /// <summary>
@@ -67,15 +84,15 @@ namespace AprilBeaconsHomeAssistantIntegrationService
                 // add values into dictionary to easy search by sensor-type
                 var vals = new Dictionary<Sensor, object>
                 {
-                    { SensorsList.First(e => e.Class == "temperature"), temp },
-                    { SensorsList.First(e => e.Class == "humidity"), humi },
-                    { SensorsList.First(e => e.Class == "illuminance"), illu },
-                    { SensorsList.First(e => e.Class == "battery"), batt }
+                    { SensorsList.First(e => e.SensorClass == SensorClass.temperature), temp },
+                    { SensorsList.First(e => e.SensorClass == SensorClass.humidity), humi },
+                    { SensorsList.First(e => e.SensorClass == SensorClass.illuminance), illu },
+                    { SensorsList.First(e => e.SensorClass == SensorClass.battery), batt }
                 };
 
                 // add values into json
                 foreach (var sensor in SensorsList)
-                    payloadObj.Add(sensor.ValueName, JToken.FromObject(vals[sensor]));
+                    payloadObj.Add(sensor.SensorClass.ValueName(), JToken.FromObject(vals[sensor]));
 
                 // delete serviceData key, to avoid re-processing of the message
                 payloadObj.Remove("servicedata");
@@ -83,13 +100,15 @@ namespace AprilBeaconsHomeAssistantIntegrationService
                 payload = payloadObj.ToString();
 
                 // send message
-                await MqttClient.PublishAsync(e.ApplicationMessage.Topic, payload, MqttConfiguration.MqttQosLevel);
+                await MqttClient.PublishAsync(
+                    $"{string.Format(MqttConfiguration.TopicBase, ProgramConfiguration.ServiceName)}/{payloadObj.Value<string>("id").Replace(":", "")}",
+                    payload, MqttConfiguration.MqttQosLevel, false);
 
-                Logger.LogInformation("WorkerABN03 send message: {0}", payload);
+                Logger.LogInformation($"WorkerABN03 send message: {payload} at {DateTimeOffset.Now}");
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "WorkerABN03 error");
+                Logger.LogError(ex, $"WorkerABN03 error at {DateTimeOffset.Now}");
             }
         }
     }

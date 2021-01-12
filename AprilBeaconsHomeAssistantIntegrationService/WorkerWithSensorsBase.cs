@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MQTTnet;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -24,8 +25,6 @@ namespace AprilBeaconsHomeAssistantIntegrationService
 
         protected virtual List<Sensor> SensorsList { get; } = new List<Sensor>();
 
-        protected virtual string HomeAssistantDeviceConfigurationTopicPattern => "homeassistant/{0}/{1}/config";
-
         public virtual async Task MqttReceiveHandler(MqttApplicationMessageReceivedEventArgs e) =>
             await Task.CompletedTask;
 
@@ -39,23 +38,30 @@ namespace AprilBeaconsHomeAssistantIntegrationService
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            await PreExecuteAsync(stoppingToken);
+            try
+            {
+                await PreExecuteAsync(stoppingToken);
 
-            // send device configuration with retain flag
-            await SendSensorConfiguration();
-            Logger.LogInformation($"{typeof(T).Name} sent sensors configuration at: {{time}}", DateTimeOffset.Now);
+                // send device configuration with retain flag
+                await SendSensorConfiguration();
+                Logger.LogInformation($"{typeof(T).Name} sent sensors configuration at: {DateTimeOffset.Now}");
 
-            await PostExecuteAsync(stoppingToken);
+                await PostExecuteAsync(stoppingToken);
 
-            Logger.LogInformation($"{typeof(T).Name} running at: {{time}}", DateTimeOffset.Now);
+                Logger.LogInformation($"{typeof(T).Name} running at: {DateTimeOffset.Now}");
 
-            while (!stoppingToken.IsCancellationRequested)
-                await Task.Delay(1000, stoppingToken);
+                while (!stoppingToken.IsCancellationRequested)
+                    await Task.Delay(1000, stoppingToken);
 
-            // wait to all work tasks finished
-            Task.WaitAll(WorkingTasks.ToArray(), 5000);
+                // wait to all work tasks finished
+                Task.WaitAll(WorkingTasks.ToArray(), 5000);
 
-            Logger.LogInformation($"{typeof(T).Name} stopping at: {{time}}", DateTimeOffset.Now);
+                Logger.LogInformation($"{typeof(T).Name} stopping at: {DateTimeOffset.Now}");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"{typeof(T).Name} error at {DateTimeOffset.Now}");
+            }
         }
 
         protected virtual async Task PostExecuteAsync(CancellationToken stoppingToken) => await Task.CompletedTask;
@@ -69,29 +75,41 @@ namespace AprilBeaconsHomeAssistantIntegrationService
         /// <returns></returns>
         protected virtual async Task SendSensorConfiguration()
         {
-            foreach (var deviceId in Devices)
-                foreach (var sensor in SensorsList)
-                    await MqttClient.PublishAsync(
-                        string.Format(HomeAssistantDeviceConfigurationTopicPattern, sensor.Category, GetSensorUniqueId(deviceId, sensor)),
-                        GetSensorConfigurationPayload(deviceId, sensor).ToString(),
-                        MqttConfiguration.MqttQosLevel,
-                        true);
+            try
+            {
+                foreach (var deviceId in Devices)
+                    foreach (var sensor in SensorsList)
+                    {
+                        FillSensorIdData(sensor, deviceId);
+
+                        await MqttClient.PublishAsync(
+                            string.Format(MqttConfiguration.ConfigurationTopic, sensor.SensorClass.SensorCategory(), sensor.UniqueId),
+                            JsonConvert.SerializeObject(sensor),
+                            MqttConfiguration.MqttQosLevel,
+                            true);
+
+                        Logger.LogInformation($"{typeof(T).Name} send configuration for sensor {sensor.UniqueId} at: {DateTimeOffset.Now}");
+
+                        // clear values because of sharing single object...
+                        ClearSensorIdData(sensor, deviceId);
+                    }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"{typeof(T).Name} error at {DateTimeOffset.Now}");
+            }
         }
 
-        protected virtual JObject GetSensorConfigurationPayload(string deviceId, Sensor sensor) =>
-            JObject.FromObject(new
-            {
-                stat_t = $"{MqttConfiguration.TopicBase}/{deviceId}",
-                name = GetSensorName(deviceId, sensor),
-                uniq_id = GetSensorUniqueId(deviceId, sensor),
-                dev_cla = sensor.Class,
-                val_tpl = $"{{{{ value_json.{sensor.ValueName} | is_defined }}}}",
-                unit_of_meas = sensor.Unit,
-                ic = sensor.SensorIcon
-            });
+        private void FillSensorIdData(Sensor sensor, string deviceId)
+        {
+            sensor.Device.Identifiers.Add(deviceId);
+            sensor.Device.Connections.Add(new List<string> { "mac", deviceId });
+        }
 
-        protected virtual string GetSensorName(string deviceId, Sensor sensor) => string.Format(sensor.Name, deviceId);
-
-        protected virtual string GetSensorUniqueId(string deviceId, Sensor sensor) => string.Format(sensor.UniqueId, deviceId);
+        private void ClearSensorIdData(Sensor sensor, string deviceId)
+        {
+            sensor.Device.Identifiers.Clear();
+            sensor.Device.Connections.Clear();
+        }
     }
 }

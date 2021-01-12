@@ -19,6 +19,7 @@ namespace AprilBeaconsHomeAssistantIntegrationService
                     services.Configure<MqttConfiguration>(hostContext.Configuration.GetSection("MqttConfiguration"));
                     services.Configure<ProgramConfiguration>(hostContext.Configuration.GetSection("ProgramConfiguration"));
                     services.AddSingleton(typeof(IMqttClientForMultipleSubscribers), typeof(MqttClientForMultipleSubscribers));
+                    //services.AddHostedService<WorkerLinuxSensors>();
                     services.AddHostedService<WorkerABN03>();
                 });
     }
