@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29324.140
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AprilBeaconsHomeAssistantIntegrationService", "AprilBeaconsHomeAssistantIntegrationService\AprilBeaconsHomeAssistantIntegrationService.csproj", "{B1D192E8-2AF0-46E8-AF61-C1CD4BF6111A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AprilBeaconsHomeAssistantIntegrationService", "AprilBeaconsHomeAssistantIntegrationService\AprilBeaconsHomeAssistantIntegrationService.csproj", "{B1D192E8-2AF0-46E8-AF61-C1CD4BF6111A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HassSensorConfiguration", "HassSensorConfiguration\HassSensorConfiguration.csproj", "{6900A516-85CE-4ED3-9F16-F7EE22158DB6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{B1D192E8-2AF0-46E8-AF61-C1CD4BF6111A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B1D192E8-2AF0-46E8-AF61-C1CD4BF6111A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B1D192E8-2AF0-46E8-AF61-C1CD4BF6111A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6900A516-85CE-4ED3-9F16-F7EE22158DB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6900A516-85CE-4ED3-9F16-F7EE22158DB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6900A516-85CE-4ED3-9F16-F7EE22158DB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6900A516-85CE-4ED3-9F16-F7EE22158DB6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -3,7 +3,7 @@ using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 
-namespace AprilBeaconsHomeAssistantIntegrationService
+namespace HassSensorConfiguration
 {
     public static class SensorClassNameExtensions
     {

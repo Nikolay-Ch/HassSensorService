@@ -1,6 +1,7 @@
 ﻿using DeviceId;
 using DeviceId.Encoders;
 using DeviceId.Formatters;
+using HassSensorConfiguration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
