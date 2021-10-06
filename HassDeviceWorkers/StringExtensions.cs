@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AprilBeaconsHomeAssistantIntegrationService
+namespace HassDeviceWorkers
 {
     public static class StringExtensions
     {

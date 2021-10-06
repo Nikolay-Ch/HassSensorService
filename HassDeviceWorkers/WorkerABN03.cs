@@ -1,3 +1,5 @@
+using HassDeviceBaseWorkers;
+using HassMqttIntegration;
 using HassSensorConfiguration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -10,45 +12,44 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace AprilBeaconsHomeAssistantIntegrationService
+namespace HassDeviceWorkers
 {
     /// <summary>
     /// Convert advertising raw-data into normal values for HomeAssistant MQTT (with autodiscover option)
     /// see documentation of the N03 April Beacon device
     /// https://wiki.aprbrother.com/en/ABSensor.html#absensor-n03
     /// </summary>
-    public class WorkerABN03 : WorkerWithSensorsBase<WorkerABN03>
+    public class WorkerABN03 : DeviceBaseWorker<WorkerABN03>
     {
-        protected override List<string> Devices => ProgramConfiguration.AprilBeaconDevicesList;
-
-        protected override List<Sensor> SensorsList { get; }
-
-        public WorkerABN03(ILogger<WorkerABN03> logger, IOptions<MqttConfiguration> mqttConfiguration, IOptions<ProgramConfiguration> programConfiguration, IMqttClientForMultipleSubscribers mqttClient)
-            : base(logger, mqttConfiguration, programConfiguration, mqttClient)
+        public WorkerABN03(string deviceId, ILogger<WorkerABN03> logger, IOptions<WorkersConfiguration> workersConfiguration, IOptions<MqttConfiguration> mqttConfiguration, IMqttClientForMultipleSubscribers mqttClient)
+            : base(deviceId, logger, workersConfiguration, mqttConfiguration, mqttClient)
         {
-            SensorsList = new List<Sensor>
+            var sensorFactory = new SensorFactory();
+            var device = new Device
             {
-                new Sensor { SensorClass = SensorClass.temperature,
-                    Device = new Device{ Name = "ABN03", Model = "ABSensor N03", Manufacturer = "April Brother", ViaDevice = ProgramConfiguration.ServiceName } },
-
-                new Sensor { SensorClass = SensorClass.humidity,
-                    Device = new Device{ Name = "ABN03", Model = "ABSensor N03", Manufacturer = "April Brother", ViaDevice = ProgramConfiguration.ServiceName } },
-
-                new Sensor { SensorClass = SensorClass.illuminance,
-                    Device = new Device{ Name = "ABN03", Model = "ABSensor N03", Manufacturer = "April Brother", ViaDevice = ProgramConfiguration.ServiceName } },
-
-                new Sensor { SensorClass = SensorClass.battery,
-                    Device = new Device{ Name = "ABN03", Model = "ABSensor N03", Manufacturer = "April Brother", ViaDevice = ProgramConfiguration.ServiceName } }
+                Name = "ABN03",
+                Model = "ABSensor N03",
+                Manufacturer = "April Brother",
+                ViaDevice = WorkersConfiguration.ServiceName,
+                Identifiers = new() { DeviceId },
+                Connections = new() { new() { "mac", DeviceId } }
             };
+
+            ComponentList.AddRange(new List<Sensor>
+            {
+                sensorFactory.CreateSensor(DeviceClassDescription.Temperature, device: device),
+                sensorFactory.CreateSensor(DeviceClassDescription.Humidity, device: device),
+                sensorFactory.CreateSensor(DeviceClassDescription.IlluminanceLux, device: device),
+                sensorFactory.CreateSensor(DeviceClassDescription.Battery, device: device)
+            });
         }
 
-        protected override async Task PostExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task PostSendConfigurationAsync(CancellationToken stoppingToken)
         {
             try
             {
                 // subscribe to all devices raw-messages
-                foreach (var device in ProgramConfiguration.AprilBeaconDevicesList)
-                    await MqttClient.SubscribeAsync(this, $"{MqttConfiguration.TopicToSubscribe}/{device}", MqttConfiguration.MqttQosLevel);
+                await MqttClient.SubscribeAsync(this, $"{MqttConfiguration.TopicToSubscribe}/{DeviceId}", MqttConfiguration.MqttQosLevel);
             }
             catch (Exception ex)
             {
@@ -83,17 +84,17 @@ namespace AprilBeaconsHomeAssistantIntegrationService
                 var batt = payloadBytes[8];
 
                 // add values into dictionary to easy search by sensor-type
-                var vals = new Dictionary<Sensor, object>
+                var vals = new Dictionary<IHassComponent, object>
                 {
-                    { SensorsList.First(e => e.SensorClass == SensorClass.temperature), temp },
-                    { SensorsList.First(e => e.SensorClass == SensorClass.humidity), humi },
-                    { SensorsList.First(e => e.SensorClass == SensorClass.illuminance), illu },
-                    { SensorsList.First(e => e.SensorClass == SensorClass.battery), batt }
+                    { ComponentList.First(e => e.DeviceClass == "temperature"), temp },
+                    { ComponentList.First(e => e.DeviceClass == "humidity"), humi },
+                    { ComponentList.First(e => e.DeviceClass == "illuminance"), illu },
+                    { ComponentList.First(e => e.DeviceClass == "battery"), batt }
                 };
 
                 // add values into json
-                foreach (var sensor in SensorsList)
-                    payloadObj.Add(sensor.SensorClass.ValueName(), JToken.FromObject(vals[sensor]));
+                foreach (var sensor in ComponentList)
+                    payloadObj.Add(sensor.DeviceClassDescription.ValueName, JToken.FromObject(vals[sensor]));
 
                 // delete serviceData key, to avoid re-processing of the message
                 payloadObj.Remove("servicedata");
@@ -102,7 +103,7 @@ namespace AprilBeaconsHomeAssistantIntegrationService
 
                 // send message
                 await MqttClient.PublishAsync(
-                    $"{string.Format(MqttConfiguration.TopicBase, ProgramConfiguration.ServiceName)}/{payloadObj.Value<string>("id").Replace(":", "")}",
+                    $"{string.Format(ComponentList[0].StateTopic, WorkersConfiguration.ServiceName)}/{payloadObj.Value<string>("id").Replace(":", "")}",
                     payload, MqttConfiguration.MqttQosLevel, false);
 
                 Logger.LogInformation($"WorkerABN03 send message: {payload} at {DateTimeOffset.Now}");

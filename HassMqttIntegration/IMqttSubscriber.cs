@@ -1,7 +1,7 @@
 ﻿using MQTTnet;
 using System.Threading.Tasks;
 
-namespace AprilBeaconsHomeAssistantIntegrationService
+namespace HassMqttIntegration
 {
     public interface IMqttSubscriber
     {

@@ -2,7 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 
-namespace AprilBeaconsHomeAssistantIntegrationService
+namespace HassDeviceWorkers
 {
     public sealed class FloatStringConverter : JsonConverter
     {

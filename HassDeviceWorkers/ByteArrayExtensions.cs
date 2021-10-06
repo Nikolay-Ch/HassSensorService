@@ -1,4 +1,4 @@
-﻿namespace AprilBeaconsHomeAssistantIntegrationService
+﻿namespace HassDeviceWorkers
 {
     public static class ByteArrayExtensions
     {

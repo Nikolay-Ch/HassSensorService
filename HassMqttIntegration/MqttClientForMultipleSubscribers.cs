@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace AprilBeaconsHomeAssistantIntegrationService
+namespace HassMqttIntegration
 {
     public interface IMqttClientForMultipleSubscribers
     {
@@ -20,26 +20,24 @@ namespace AprilBeaconsHomeAssistantIntegrationService
         Task SubscribeAsync(IMqttSubscriber subscriber, string v, MqttQualityOfServiceLevel mqttQosLevel);
     }
 
-    class MqttClientForMultipleSubscribers : IMqttClientForMultipleSubscribers
+    public class MqttClientForMultipleSubscribers : IMqttClientForMultipleSubscribers
     {
         protected ILogger<MqttClientForMultipleSubscribers> Logger { get; }
         protected MqttConfiguration MqttConfiguration { get; }
-        protected ProgramConfiguration ProgramConfiguration { get; set; }
         protected List<KeyValuePair<string, List<IMqttSubscriber>>> Subscribers { get; set; } =
             new List<KeyValuePair<string, List<IMqttSubscriber>>>();
 
         public IManagedMqttClient MqttClient { get; }
 
-        public MqttClientForMultipleSubscribers(ILogger<MqttClientForMultipleSubscribers> logger, IOptions<MqttConfiguration> mqttConfiguration, IOptions<ProgramConfiguration> programConfiguration)
+        public MqttClientForMultipleSubscribers(ILogger<MqttClientForMultipleSubscribers> logger, IOptions<MqttConfiguration> mqttConfiguration)
         {
             Logger = logger;
             MqttConfiguration = mqttConfiguration.Value;
-            ProgramConfiguration = programConfiguration.Value;
 
-            Logger.LogInformation("Creating MqttClient at: {time}", DateTimeOffset.Now);
+            Logger.LogInformation("Creating MqttClient at: {time}. Uri:{1}", DateTimeOffset.Now, MqttConfiguration.MqttUri);
 
             var messageBuilder = new MqttClientOptionsBuilder()
-                .WithClientId(MqttConfiguration.ClientId.Replace("-", ""))
+                .WithClientId(MqttConfiguration.ClientId.Replace("-", "").Replace(" ", ""))
                 .WithCredentials(MqttConfiguration.MqttUser, MqttConfiguration.MqttUserPassword)
                 .WithTcpServer(MqttConfiguration.MqttUri, MqttConfiguration.MqttPort)
                 .WithCleanSession();
@@ -60,7 +58,10 @@ namespace AprilBeaconsHomeAssistantIntegrationService
 
             // wait for connection
             while (!MqttClient.IsConnected)
+            {
+                Logger.LogTrace("MqttClient not connected... Go to sleep for a second...");
                 Thread.Sleep(1000);
+            }
 
             MqttClient.UseApplicationMessageReceivedHandler(async e => await MessageReceive(e));
 
