@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Tako.CRC" Version="1.0.3.4" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\HassDeviceBaseWorkers\HassDeviceBaseWorkers.csproj" />
   </ItemGroup>
 

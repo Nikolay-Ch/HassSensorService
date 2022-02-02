@@ -16,6 +16,15 @@
         public string ValueName { get; init; } // name of property, contained value in value-MQTT message
         public string UnitOfMeasures { get; init; }
 
+        public DeviceClassDescription() { }
+
+        public DeviceClassDescription(DeviceClassDescription deviceClassDescription)
+        {
+            DeviceClass = deviceClassDescription.DeviceClass;
+            ValueName = deviceClassDescription.ValueName;
+            UnitOfMeasures = deviceClassDescription.UnitOfMeasures;
+        }
+
         public static DeviceClassDescription None => new();
 
         public static DeviceClassDescription Temperature => new()
@@ -47,6 +56,18 @@
 
         public static DeviceClassDescription Voltage => new()
         { DeviceClass = "voltage", ValueName = "volt", UnitOfMeasures = "V" };
+
+        public static DeviceClassDescription Current => new()
+        { DeviceClass = "current", ValueName = "amps", UnitOfMeasures = "A" };
+
+        public static DeviceClassDescription Power => new()
+        { DeviceClass = "power", ValueName = "watt", UnitOfMeasures = "W" };
+
+        public static DeviceClassDescription PowerFactor => new()
+        { DeviceClass = "power_factor", ValueName = "pfact", UnitOfMeasures = "%" };
+
+        public static DeviceClassDescription Frequency => new()
+        { DeviceClass = "frequency", ValueName = "freq", UnitOfMeasures = "Hz" };
 
         public static DeviceClassDescription PressureHpa => new()
         { DeviceClass = "pressure", ValueName = "pres", UnitOfMeasures = "hPa" };

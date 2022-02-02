@@ -125,11 +125,7 @@ namespace HassDeviceWorkers
                 //var diskUsage = GetDiskUsage();
                 var osTemps = GetThermalZonesValues();
 
-                var payload = JObject.FromObject(new
-                {
-                    Id = DeviceId,
-                    name = $"{DeviceId}"
-                });
+                var payload = CreatePayloadObject();
 
                 var procUtilizationSensor = ComponentList.Single(e => e.Name == "CPU_Load");
                 payload.Add(new JProperty(procUtilizationSensor.DeviceClassDescription.ValueName, procUtilization.ToString("N2")));
@@ -144,16 +140,11 @@ namespace HassDeviceWorkers
                 }
 
                 // send message
-                await MqttClient.PublishAsync(
-                    $"{string.Format(ComponentList[0].StateTopic, WorkersConfiguration.ServiceName)}/{DeviceId}",
-                    payload.ToString(),
-                    MqttConfiguration.MqttQosLevel);
-
-                Logger.LogInformation($"WorkerLinuxSensors send message: {payload} at {DateTimeOffset.Now}");
+                await SendDeviceInformation(ComponentList[0], payload);
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, $"WorkerLinuxSensors error at {DateTimeOffset.Now}");
+                Logger.LogError(ex, $"{GetType().Name} error at {DateTimeOffset.Now}");
             }
 
         }

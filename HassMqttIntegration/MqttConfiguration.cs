@@ -29,5 +29,6 @@ namespace HassMqttIntegration
         public MqttQualityOfServiceLevel MqttQosLevel { get; set; } = MqttQualityOfServiceLevel.AtMostOnce;
         public string TopicToSubscribe { get; set; }
         public string ConfigurationTopic { get; set; }
+        public string MqttHomeAssistantHomeTopic { get; set; }
     }
 }

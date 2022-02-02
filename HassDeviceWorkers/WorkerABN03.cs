@@ -99,18 +99,12 @@ namespace HassDeviceWorkers
                 // delete serviceData key, to avoid re-processing of the message
                 payloadObj.Remove("servicedata");
 
-                payload = payloadObj.ToString();
-
                 // send message
-                await MqttClient.PublishAsync(
-                    $"{string.Format(ComponentList[0].StateTopic, WorkersConfiguration.ServiceName)}/{payloadObj.Value<string>("id").Replace(":", "")}",
-                    payload, MqttConfiguration.MqttQosLevel, false);
-
-                Logger.LogInformation($"WorkerABN03 send message: {payload} at {DateTimeOffset.Now}");
+                await SendDeviceInformation(ComponentList[0], payloadObj);
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, $"WorkerABN03 error at {DateTimeOffset.Now}");
+                Logger.LogError(ex, $"{GetType().Name} error at {DateTimeOffset.Now}");
             }
         }
     }

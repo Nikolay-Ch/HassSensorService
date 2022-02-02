@@ -1,4 +1,5 @@
 using HassDeviceBaseWorkers;
+using HassDeviceWorkers.ModBus;
 using HassMqttIntegration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -48,6 +49,7 @@ namespace HassSensorService
                     var env = ctx.HostingEnvironment;
 
                     cfg.AddJsonFile("/config/appsettings.json", true, false)
+                        .AddJsonFile("appsettings.json", true, false)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false)
                         .AddEnvironmentVariables();
                 })
@@ -67,6 +69,7 @@ namespace HassSensorService
                 {
                     services.Configure<MqttConfiguration>(hostContext.Configuration.GetSection(nameof(MqttConfiguration)));
                     services.Configure<WorkersConfiguration>(hostContext.Configuration.GetSection(nameof(WorkersConfiguration)));
+                    services.Configure<ModbusGatewayConfiguration>(hostContext.Configuration.GetSection(nameof(ModbusGatewayConfiguration)));
                     services.AddSingleton(typeof(IMqttClientForMultipleSubscribers), typeof(MqttClientForMultipleSubscribers));
 
                     // get all workers
@@ -91,7 +94,7 @@ namespace HassSensorService
                     // add each worker as a service and pass deviceId parameter to it
                     foreach (var worker in workers)
                     {
-                        var t = Type.GetType($"{worker.workerType}, WorkerSensors", true);
+                        var t = Type.GetType($"{worker.workerType}, HassDeviceWorkers", true);
 
                         services.AddTransient(typeof(IHostedService),
                             (serviceProvider) => ActivatorUtilities.CreateInstance(serviceProvider, t, worker.deviceUniqueId));

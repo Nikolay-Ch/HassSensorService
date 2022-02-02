@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MQTTnet;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -98,6 +99,29 @@ namespace HassDeviceBaseWorkers
 
                     Logger.LogInformation($"{typeof(T).Name} send configuration for component {component.UniqueId} at: {DateTimeOffset.Now}");
                 }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"{typeof(T).Name} error at {DateTimeOffset.Now}");
+            }
+        }
+
+        protected virtual JObject CreatePayloadObject() =>
+            JObject.FromObject(new { Id = DeviceId, name = $"{DeviceId}" });
+
+        protected virtual async Task SendDeviceInformation(IHassComponent component, JObject payload)
+        {
+            try
+            {
+                // send message
+                await MqttClient.PublishAsync(
+                    component
+                        .StateTopic
+                        .Replace("+/+", $"{MqttConfiguration.MqttHomeAssistantHomeTopic}/{WorkersConfiguration.ServiceName}"),
+                    payload.ToString(),
+                    MqttConfiguration.MqttQosLevel);
+
+                Logger.LogInformation($"{typeof(T).Name} send information message: {payload} at {DateTimeOffset.Now}");
             }
             catch (Exception ex)
             {
