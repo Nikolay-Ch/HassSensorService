@@ -18,7 +18,7 @@ namespace HassDeviceWorkers.ModBus
             LineVoltage2 = BitConverter.ToUInt32(rawModBusData.SubArray(0x10, 4).Reverse().ToArray()) / (double)1000;
             LineVoltage3 = BitConverter.ToUInt32(rawModBusData.SubArray(0x14, 4).Reverse().ToArray()) / (double)1000;
             Frequency = BitConverter.ToUInt32(rawModBusData.SubArray(0x64, 4).Reverse().ToArray()) / (double)1000;
-            VoltageUnbalance = BitConverter.ToUInt32(rawModBusData.SubArray(0x68, 4).Reverse().ToArray()) / (double)1000;
+            VoltageUnbalance = BitConverter.ToUInt32(rawModBusData.SubArray(0x68, 4).Reverse().ToArray()) / (double)10;
         }
 
         public double PhaseVoltage1 { get; }

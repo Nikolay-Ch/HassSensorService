@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Tako.CRC;
 
 namespace HassDeviceWorkers.ModBus
 {
@@ -20,13 +19,10 @@ namespace HassDeviceWorkers.ModBus
             bufwrite[4] = HiByte(registerToRead.Length);
             bufwrite[5] = LoByte(registerToRead.Length);
 
-            var crc16 = new CRCManager()
-                .CreateCRCProvider(EnumCRCProvider.CRC16Modbus)
-                .GetCRC(bufwrite.Take(6).ToArray())
-                .CrcArray;
+            var crc16 = Crc.GetModbusCrc16(bufwrite.Take(6).ToArray());
 
-            bufwrite[6] = crc16[1];
-            bufwrite[7] = crc16[0];
+            bufwrite[6] = crc16[0];
+            bufwrite[7] = crc16[1];
 
             SerialPort.Write(bufwrite, 0, bufwrite.Length);
 
@@ -55,6 +51,35 @@ namespace HassDeviceWorkers.ModBus
 
         private static byte HiByte(int addressToRead) => (byte)(addressToRead >> 8);
 
-        public void Dispose() => SerialPort.Dispose();
+        #region implementation of IDisposable with Dispose pattern
+        private bool disposedValue;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                    SerialPort.Dispose();
+
+                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                // TODO: set large fields to null
+                disposedValue = true;
+            }
+        }
+
+        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+        // ~ModbusRegisterReader()
+        // {
+        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+        #endregion
     }
 }

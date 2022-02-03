@@ -34,7 +34,7 @@ namespace HassMqttIntegration
             Logger = logger;
             MqttConfiguration = mqttConfiguration.Value;
 
-            Logger.LogInformation("Creating MqttClient at: {time}. Uri:{1}", DateTimeOffset.Now, MqttConfiguration.MqttUri);
+            Logger.LogInformation("Creating MqttClient at: {time}. Uri:{uri}", DateTimeOffset.Now, MqttConfiguration.MqttUri);
 
             var messageBuilder = new MqttClientOptionsBuilder()
                 .WithClientId(MqttConfiguration.ClientId.Replace("-", "").Replace(" ", ""))
