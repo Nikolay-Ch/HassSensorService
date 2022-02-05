@@ -17,7 +17,7 @@ namespace HassDeviceWorkers
         public Sdm120mWorker(string deviceId, ILogger<Sdm120mWorker> logger, IOptions<WorkersConfiguration> workersConfiguration, IOptions<MqttConfiguration> mqttConfiguration, IOptions<ModbusGatewayConfiguration> modbusGatewayConfiguration, IMqttClientForMultipleSubscribers mqttClient)
             : base(deviceId, logger, workersConfiguration, mqttConfiguration, modbusGatewayConfiguration, mqttClient)
         {
-            var sensorFactory = new SensorFactory();
+            var sensorFactory = new AnalogSensorFactory();
             var device = new Device
             {
                 Name = "SDM120M",
@@ -28,15 +28,15 @@ namespace HassDeviceWorkers
                 Connections = new() { new() { "mac", DeviceId } }
             };
 
-            ComponentList.AddRange(new List<Sensor>
+            ComponentList.AddRange(new List<IHassComponent>
             {
-                sensorFactory.CreateSensor(DeviceClassDescription.Voltage, device: device),
-                sensorFactory.CreateSensor(DeviceClassDescription.Current, device: device),
-                sensorFactory.CreateSensor(new(DeviceClassDescription.Power) { ValueName = "acwatt" }, device: device),
-                sensorFactory.CreateSensor(new(DeviceClassDescription.Power) { ValueName = "rewatt" }, device: device),
-                sensorFactory.CreateSensor(new(DeviceClassDescription.Power) { ValueName = "apwatt" }, device: device),
-                sensorFactory.CreateSensor(DeviceClassDescription.PowerFactor, device: device),
-                sensorFactory.CreateSensor(DeviceClassDescription.Frequency, device: device),
+                sensorFactory.CreateComponent(new AnalogSensorDescription {DeviceClassDescription = DeviceClassDescription.Voltage, Device = device }),
+                sensorFactory.CreateComponent(new AnalogSensorDescription {DeviceClassDescription = DeviceClassDescription.Current, Device = device }),
+                sensorFactory.CreateComponent(new AnalogSensorDescription {DeviceClassDescription = DeviceClassDescription.Power, Device = device }),
+                sensorFactory.CreateComponent(new AnalogSensorDescription {DeviceClassDescription = DeviceClassDescription.ReactivePower, Device = device }),
+                sensorFactory.CreateComponent(new AnalogSensorDescription {DeviceClassDescription = DeviceClassDescription.ApparentPower, Device = device }),
+                sensorFactory.CreateComponent(new AnalogSensorDescription {DeviceClassDescription = DeviceClassDescription.PowerFactor, Device = device }),
+                sensorFactory.CreateComponent(new AnalogSensorDescription {DeviceClassDescription = DeviceClassDescription.FrequencyHz, Device = device }),
             });
         }
 
@@ -58,18 +58,18 @@ namespace HassDeviceWorkers
 
                 payload.Add(new JProperty(GetValueName("volt"), sdm120.Voltage));
                 payload.Add(new JProperty(GetValueName("amps"), sdm120.Current));
-                payload.Add(new JProperty(GetValueName("acwatt"), sdm120.ActivePower));
-                payload.Add(new JProperty(GetValueName("rewatt"), sdm120.ReactivePower));
-                payload.Add(new JProperty(GetValueName("apwatt"), sdm120.ApparentPower));
+                payload.Add(new JProperty(GetValueName("watt"), sdm120.ActivePower));
+                payload.Add(new JProperty(GetValueName("var"), sdm120.ReactivePower));
+                payload.Add(new JProperty(GetValueName("va"), sdm120.ApparentPower));
                 payload.Add(new JProperty(GetValueName("pfact"), sdm120.PowerFactor));
-                payload.Add(new JProperty(GetValueName("freq"), sdm120.Frequency));
+                payload.Add(new JProperty(GetValueName("freqh"), sdm120.Frequency));
 
                 // send message
                 await SendDeviceInformation(ComponentList[0], payload);
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, $"{GetType().Name} error at {DateTimeOffset.Now}");
+                Logger.LogError(ex, "{typeName} error at {time}", GetType().Name, DateTimeOffset.Now);
             }
         }
     }

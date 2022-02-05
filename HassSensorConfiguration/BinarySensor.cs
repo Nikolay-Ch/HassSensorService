@@ -33,6 +33,9 @@ namespace HassSensorConfiguration
         [JsonProperty("icon", NullValueHandling = NullValueHandling.Ignore)]
         public string Icon { get; init; }
 
+        [JsonProperty("value_template")]
+        public string ValueTemplate { get; init; }
+
         [JsonProperty("device")]
         public Device Device { get; init; }
     }

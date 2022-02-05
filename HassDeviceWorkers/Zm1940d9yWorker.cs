@@ -17,7 +17,7 @@ namespace HassDeviceWorkers
         public Zm1940d9yWorker(string deviceId, ILogger<Sdm120mWorker> logger, IOptions<WorkersConfiguration> workersConfiguration, IOptions<MqttConfiguration> mqttConfiguration, IOptions<ModbusGatewayConfiguration> modbusGatewayConfiguration, IMqttClientForMultipleSubscribers mqttClient)
             : base(deviceId, logger, workersConfiguration, mqttConfiguration, modbusGatewayConfiguration, mqttClient)
         {
-            var sensorFactory = new SensorFactory();
+            var sensorFactory = new AnalogSensorFactory();
             var device = new Device
             {
                 Name = "ZM194-D9Y",
@@ -28,16 +28,16 @@ namespace HassDeviceWorkers
                 Connections = new() { new() { "mac", DeviceId } }
             };
 
-            ComponentList.AddRange(new List<Sensor>
+            ComponentList.AddRange(new List<IHassComponent>
             {
-                sensorFactory.CreateSensor(new(DeviceClassDescription.Voltage) { ValueName = "PhaseV1" }, device: device),
-                sensorFactory.CreateSensor(new(DeviceClassDescription.Voltage) { ValueName = "PhaseV2" }, device: device),
-                sensorFactory.CreateSensor(new(DeviceClassDescription.Voltage) { ValueName = "PhaseV3" }, device: device),
-                sensorFactory.CreateSensor(new(DeviceClassDescription.Voltage) { ValueName = "LineV1" }, device: device),
-                sensorFactory.CreateSensor(new(DeviceClassDescription.Voltage) { ValueName = "LineV2" }, device: device),
-                sensorFactory.CreateSensor(new(DeviceClassDescription.Voltage) { ValueName = "LineV3" }, device: device),
-                sensorFactory.CreateSensor(DeviceClassDescription.Frequency, device: device),
-                sensorFactory.CreateSensor(new(DeviceClassDescription.Voltage) { ValueName = "VUnbalance" }, device: device),
+                sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = new(DeviceClassDescription.Voltage) { ValueName = "ph1_volt" }, Device = device }),
+                sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = new(DeviceClassDescription.Voltage) { ValueName = "ph2_volt" }, Device = device }),
+                sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = new(DeviceClassDescription.Voltage) { ValueName = "ph3_volt" }, Device = device }),
+                sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = new(DeviceClassDescription.Voltage) { ValueName = "ln12_volt" }, Device = device }),
+                sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = new(DeviceClassDescription.Voltage) { ValueName = "ln23_volt" }, Device = device }),
+                sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = new(DeviceClassDescription.Voltage) { ValueName = "ln31_volt" }, Device = device }),
+                sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = DeviceClassDescription.FrequencyHz, Device = device }),
+                sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = new(DeviceClassDescription.Voltage) { ValueName = "unb_volt" }, Device = device })
             });
         }
 
@@ -57,14 +57,14 @@ namespace HassDeviceWorkers
 
                 var zm194 = new Zm1940d9y(register.RawValue);
 
-                payload.Add(new JProperty(GetValueName("PhaseV1"), zm194.PhaseVoltage1));
-                payload.Add(new JProperty(GetValueName("PhaseV2"), zm194.PhaseVoltage2));
-                payload.Add(new JProperty(GetValueName("PhaseV3"), zm194.PhaseVoltage3));
-                payload.Add(new JProperty(GetValueName("LineV1"), zm194.LineVoltage1));
-                payload.Add(new JProperty(GetValueName("LineV2"), zm194.LineVoltage2));
-                payload.Add(new JProperty(GetValueName("LineV3"), zm194.LineVoltage3));
-                payload.Add(new JProperty(GetValueName("freq"), zm194.Frequency));
-                payload.Add(new JProperty(GetValueName("VUnbalance"), zm194.VoltageUnbalance));
+                payload.Add(new JProperty(GetValueName("ph1_volt"), zm194.Phase1Voltage));
+                payload.Add(new JProperty(GetValueName("ph2_volt"), zm194.Phase2Voltage));
+                payload.Add(new JProperty(GetValueName("ph3_volt"), zm194.Phase3Voltage));
+                payload.Add(new JProperty(GetValueName("ln12_volt"), zm194.Line1To2Voltage));
+                payload.Add(new JProperty(GetValueName("ln23_volt"), zm194.Line2To3Voltage));
+                payload.Add(new JProperty(GetValueName("ln31_volt"), zm194.Line3To1Voltage));
+                payload.Add(new JProperty(GetValueName("freqh"), zm194.Frequency));
+                payload.Add(new JProperty(GetValueName("unb_volt"), zm194.VoltageUnbalance));
 
                 // send message
                 await SendDeviceInformation(ComponentList[0], payload);

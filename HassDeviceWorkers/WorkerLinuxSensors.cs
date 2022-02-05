@@ -66,7 +66,7 @@ namespace HassDeviceWorkers
             allAddresses.AddRange(macAddresses);
             allAddresses.AddRange(ipAddresses);
 
-            var sensorFactory = new SensorFactory();
+            var sensorFactory = new AnalogSensorFactory();
             Device = new()
             {
                 Name = "OS-Sensor",
@@ -76,9 +76,18 @@ namespace HassDeviceWorkers
                 Connections = allAddresses
             };
 
-            ComponentList.Add(sensorFactory.CreateSensor(
-                new DeviceClassDescription { DeviceClass = null, ValueName = "load", UnitOfMeasures = "%" },
-                device: Device, sensorName: "CPU_Load", uniqueId: $"{Environment.MachineName}-CPU-Load"));
+            ComponentList.Add(sensorFactory.CreateComponent(
+                new AnalogSensorDescription
+                {
+                    DeviceClassDescription = new DeviceClassDescription
+                    {
+                        ValueName = "load",
+                        UnitOfMeasures = "%"
+                    },
+                    Device = Device,
+                    SensorName = "CPU_Load",
+                    UniqueId = $"{Environment.MachineName}-CPU-Load"
+                }));
 
             //// Memory Usage (read data from /proc/meminfo https://vitux.com/5-ways-to-check-available-memory-in-ubuntu/)
             //SensorsList.Add(sensorFactory.CreateSensor(
@@ -93,8 +102,14 @@ namespace HassDeviceWorkers
         protected override async Task PreSendConfigurationAsync(CancellationToken stoppingToken)
         {
             foreach (var thermalZone in ThermalZones)
-                ComponentList.Add(new SensorFactory().CreateSensor(DeviceClassDescription.Temperature,
-                    device: Device, uniqueId: $"{Environment.MachineName}-{thermalZone.Name}"));
+                ComponentList.Add(
+                    new AnalogSensorFactory().CreateComponent(
+                        new AnalogSensorDescription
+                        {
+                            DeviceClassDescription = DeviceClassDescription.Temperature,
+                            Device = Device,
+                            UniqueId = $"{Environment.MachineName}-{thermalZone.Name}"
+                        }));
 
             await base.PreSendConfigurationAsync(stoppingToken);
         }
@@ -144,7 +159,7 @@ namespace HassDeviceWorkers
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, $"{GetType().Name} error at {DateTimeOffset.Now}");
+                Logger.LogError(ex, "{typeName} error at {time}", GetType().Name, DateTimeOffset.Now);
             }
 
         }
@@ -204,7 +219,7 @@ namespace HassDeviceWorkers
             var totalTime = cpuVals.Sum();
             var workTime = cpuVals.Take(3).Sum();
 
-            Logger.LogTrace($"Reading CPU utilization: '{cpuUtilization}', {nameof(totalTime)}: {totalTime}, {nameof(workTime)}: {workTime}");
+            Logger.LogTrace("Reading CPU utilization: '{cpuUtilization}', {totalTimeName}: {totalTime}, {workTimeName}: {workTime}", cpuUtilization, nameof(totalTime), totalTime, nameof(workTime), workTime);
 
             if (lastTotalTime == 0)
                 return -1;
@@ -217,7 +232,7 @@ namespace HassDeviceWorkers
 
             var cpuUsage = workOverPeriod / (double)totalOverPeriod * 100;
 
-            Logger.LogTrace($"Calculated CPU usage: {cpuUsage}");
+            Logger.LogTrace("Calculated CPU usage: {cpuUsage}", cpuUsage);
 
             return cpuUsage;
         }

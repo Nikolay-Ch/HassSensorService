@@ -24,7 +24,7 @@ namespace HassDeviceWorkers
         public WorkerABN03(string deviceId, ILogger<WorkerABN03> logger, IOptions<WorkersConfiguration> workersConfiguration, IOptions<MqttConfiguration> mqttConfiguration, IMqttClientForMultipleSubscribers mqttClient)
             : base(deviceId, logger, workersConfiguration, mqttConfiguration, mqttClient)
         {
-            var sensorFactory = new SensorFactory();
+            var sensorFactory = new AnalogSensorFactory();
             var device = new Device
             {
                 Name = "ABN03",
@@ -35,12 +35,12 @@ namespace HassDeviceWorkers
                 Connections = new() { new() { "mac", DeviceId } }
             };
 
-            ComponentList.AddRange(new List<Sensor>
+            ComponentList.AddRange(new List<IHassComponent>
             {
-                sensorFactory.CreateSensor(DeviceClassDescription.Temperature, device: device),
-                sensorFactory.CreateSensor(DeviceClassDescription.Humidity, device: device),
-                sensorFactory.CreateSensor(DeviceClassDescription.IlluminanceLux, device: device),
-                sensorFactory.CreateSensor(DeviceClassDescription.Battery, device: device)
+                sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = DeviceClassDescription.Temperature, Device = device }),
+                sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = DeviceClassDescription.Humidity, Device = device }),
+                sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = DeviceClassDescription.IlluminanceLux, Device = device }),
+                sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = DeviceClassDescription.Battery, Device = device })
             });
         }
 
@@ -53,7 +53,7 @@ namespace HassDeviceWorkers
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, $"WorkerABN03 error at {DateTimeOffset.Now}");
+                Logger.LogError(ex, "{typeName} error at {time}", GetType().Name, DateTimeOffset.Now);
             }
         }
 
@@ -104,7 +104,7 @@ namespace HassDeviceWorkers
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, $"{GetType().Name} error at {DateTimeOffset.Now}");
+                Logger.LogError(ex, "{typeName} error at {time}", GetType().Name, DateTimeOffset.Now);
             }
         }
     }

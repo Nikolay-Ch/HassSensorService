@@ -3,7 +3,7 @@ using System.ComponentModel;
 
 namespace HassSensorConfiguration
 {
-    public partial class Sensor : IHassComponent
+    public partial class AnalogSensor : IHassComponent
     {
         public string GetConfigTopic() => $"homeassistant/sensor/{UniqueId}/config";
 

@@ -1,32 +1,32 @@
 ﻿namespace HassSensorConfiguration
 {
-    public class BinarySensorFactory
+    public class BinarySensorDescription : BaseSensorDescription
     {
-        public string TopicDeviceName { get; set; } = "HassBinarySensor";
+        public string PayloadOn { get; set; } = null;
+        public string PayloadOff { get; set; } = null;
+        public string PayloadNotAvailable { get; set; } = null;
+    }
 
-        public BinarySensor CreateBinarySensor(
-            DeviceClassDescription deviceClassDescription,
-            Device device,
-            string deviceClass = null,
-            string sensorIcon = null,
-            string sensorName = null,
-            string stateTopic = null,
-            string uniqueId = null,
-            string payloadOn = null,
-            string payloadOff = null,
-            string payloadNotAvailable = null
-        ) => new()
-        {
-            DeviceClassDescription = deviceClassDescription,
-            Device = device,
-            DeviceClass = deviceClass ?? deviceClassDescription.DeviceClass,
-            Icon = sensorIcon,
-            Name = sensorName ?? $"{device.Name}-{deviceClassDescription.ValueName}",
-            StateTopic = stateTopic ?? $"+/+/{TopicDeviceName}/{device.Identifiers[0]}",
-            UniqueId = uniqueId ?? $"{device.Identifiers[0]}-{device.Name}-{deviceClassDescription.ValueName}",
-            PayloadOn = payloadOn ?? "On",
-            PayloadOff = payloadOff ?? "Off",
-            PayloadNotAvailable = payloadNotAvailable
-        };
+    public class BinarySensorFactory : IHassComponentFactory
+    {
+        public string HassStateTopicName { get; set; } = "HassBinarySensor";
+
+        public BaseSensorDescription CreateSensorDescription() => new BinarySensorDescription();
+
+        public IHassComponent CreateComponent(BaseSensorDescription sensorDescription) =>
+            new BinarySensor
+            {
+                DeviceClassDescription = sensorDescription.DeviceClassDescription,
+                Device = sensorDescription.Device,
+                DeviceClass = sensorDescription.DeviceClass ?? sensorDescription.DeviceClassDescription.DeviceClass,
+                Icon = sensorDescription.SensorIcon,
+                Name = sensorDescription.SensorName ?? $"{sensorDescription.Device.Name}-{sensorDescription.DeviceClassDescription.ValueName}",
+                StateTopic = ((BinarySensorDescription)sensorDescription).StateTopic ?? $"+/+/{HassStateTopicName}/{sensorDescription.Device.Identifiers[0]}",
+                UniqueId = ((BinarySensorDescription)sensorDescription).UniqueId ?? $"{sensorDescription.Device.Identifiers[0]}-{sensorDescription.Device.Name}-{sensorDescription.DeviceClassDescription.ValueName}",
+                PayloadOn = ((BinarySensorDescription)sensorDescription).PayloadOn ?? "On",
+                PayloadOff = ((BinarySensorDescription)sensorDescription).PayloadOff ?? "Off",
+                PayloadNotAvailable = ((BinarySensorDescription)sensorDescription).PayloadNotAvailable,
+                ValueTemplate = sensorDescription.ValueTemplate ?? $"{{{{ value_json.{sensorDescription.DeviceClassDescription.ValueName} | is_defined }}}}"
+            };
     }
 }

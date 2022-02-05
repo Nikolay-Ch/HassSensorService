@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using System;
 using System.Runtime.Serialization;
 
 namespace HassSensorConfiguration

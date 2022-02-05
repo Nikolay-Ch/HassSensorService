@@ -1,5 +1,4 @@
 ﻿using HassSensorConfiguration;
-//using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
@@ -10,16 +9,20 @@ namespace TestApp
     {
         static void Main()
         {
-            var sensor = new SensorFactory().CreateSensor(DeviceClassDescription.Temperature,
-                new()
+            var sensor = new AnalogSensorFactory().CreateComponent(
+                new AnalogSensorDescription()
                 {
-                    Name = "ABN03",
-                    Model = "ABSensor N03",
-                    Manufacturer = "April Brother",
-                    ViaDevice = "Bla-Bla-Bla",
-                    Identifiers = new List<string>() { "XXXXXXXXXXXX" },
-                    Connections = new List<List<string>>() { new List<string>() { "mac", "XXXXXXXXXXXX" } }
-                }, stateClass: StateClass.Measurement);
+                    Device = new Device()
+                    {
+                        Name = "ABN03",
+                        Model = "ABSensor N03",
+                        Manufacturer = "April Brother",
+                        ViaDevice = "Bla-Bla-Bla",
+                        Identifiers = new List<string>() { "XXXXXXXXXXXX" },
+                        Connections = new List<List<string>>() { new List<string>() { "mac", "XXXXXXXXXXXX" } }
+                    },
+                    StateClass = StateClass.Measurement
+                });
 
             var topic = sensor.GetConfigTopic();
             var sensorInfo = JsonSerializer.Serialize(sensor);

@@ -30,7 +30,7 @@ namespace HassSensorConfiguration
         {
             if (componentType == typeof(BinarySensor))
                 return "binary_sensor";
-            if (componentType == typeof(Sensor))
+            if (componentType == typeof(AnalogSensor))
                 return "sensor";
 
             return "unknown";
@@ -41,7 +41,7 @@ namespace HassSensorConfiguration
             {
                 HassComponentType.Unknown => typeof(object),
                 HassComponentType.BinarySensor => typeof(BinarySensor),
-                HassComponentType.Sensor => typeof(Sensor),
+                HassComponentType.Sensor => typeof(AnalogSensor),
                 _ => typeof(object),
             };
 
