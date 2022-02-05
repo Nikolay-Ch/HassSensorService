@@ -350,3 +350,4 @@ MigrationBackup/
 .ionide/
 /SensorService.Docker.Build.sh
 /HassSensorService/Properties/launchSettings.json
+/SensorService.Docker.Build.cmd

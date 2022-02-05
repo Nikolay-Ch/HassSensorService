@@ -47,11 +47,11 @@ namespace HassDeviceBaseWorkers
 
                 // send device configuration with retain flag
                 await SendDeviceConfiguration();
-                Logger.LogInformation($"{typeof(T).Name} sent devices configuration at: {DateTimeOffset.Now}");
+                Logger.LogInformation("{type} sent devices configuration at: {time}", typeof(T).Name, DateTimeOffset.Now);
 
                 await PostSendConfigurationAsync(stoppingToken);
 
-                Logger.LogInformation($"{typeof(T).Name} running at: {DateTimeOffset.Now}");
+                Logger.LogInformation("{type} running at: {time}", typeof(T).Name, DateTimeOffset.Now);
 
                 try
                 {
@@ -65,11 +65,11 @@ namespace HassDeviceBaseWorkers
 
                 await BeforeExitAsync();
 
-                Logger.LogInformation($"{typeof(T).Name} stopping at: {DateTimeOffset.Now}");
+                Logger.LogInformation("{type} stopping at: {time}", typeof(T).Name, DateTimeOffset.Now);
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, $"{typeof(T).Name} error at {DateTimeOffset.Now}");
+                Logger.LogError(ex, "{type} error at {time}", typeof(T).Name, DateTimeOffset.Now);
             }
         }
 
@@ -97,12 +97,13 @@ namespace HassDeviceBaseWorkers
                         MqttConfiguration.MqttQosLevel,
                         true);
 
-                    Logger.LogInformation($"{typeof(T).Name} send configuration for component {component.UniqueId} at: {DateTimeOffset.Now}");
+                    Logger.LogInformation("{type} send configuration for component {component} at: {time}",
+                        typeof(T).Name, component.UniqueId, DateTimeOffset.Now);
                 }
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, $"{typeof(T).Name} error at {DateTimeOffset.Now}");
+                Logger.LogError(ex, "{type} error at {time}", typeof(T).Name, DateTimeOffset.Now);
             }
         }
 
@@ -121,11 +122,12 @@ namespace HassDeviceBaseWorkers
                     payload.ToString(),
                     MqttConfiguration.MqttQosLevel);
 
-                Logger.LogInformation($"{typeof(T).Name} send information message: {payload} at {DateTimeOffset.Now}");
+                Logger.LogInformation("{type} send information message: {payload} at {time}",
+                    typeof(T).Name, payload, DateTimeOffset.Now);
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, $"{typeof(T).Name} error at {DateTimeOffset.Now}");
+                Logger.LogError(ex, "{type} error at {time}", typeof(T).Name, DateTimeOffset.Now);
             }
         }
     }

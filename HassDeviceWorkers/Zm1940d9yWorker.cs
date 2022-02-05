@@ -71,7 +71,7 @@ namespace HassDeviceWorkers
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, $"{GetType().Name} error at {DateTimeOffset.Now}");
+                Logger.LogError(ex, "{typeName} error at {time}", GetType().Name, DateTimeOffset.Now);
             }
         }
     }
