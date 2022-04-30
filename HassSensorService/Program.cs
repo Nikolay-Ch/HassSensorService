@@ -48,10 +48,11 @@ namespace HassSensorService
                 {
                     var env = ctx.HostingEnvironment;
 
-                    cfg.AddJsonFile("/config/appsettings.json", true, false)
-                        .AddJsonFile("appsettings.json", true, false)
+                    cfg.AddJsonFile("appsettings.json", true, false)
+                        .AddJsonFile("/config/appsettings.json", true, false)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false)
-                        .AddEnvironmentVariables();
+                        .AddEnvironmentVariables()
+                        ;
                 })
                 .ConfigureLogging((ctx, logging) =>
                 {

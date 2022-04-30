@@ -2,7 +2,7 @@
 {
     public class AnalogSensorDescription : BaseSensorDescription
     {
-        public StateClass StateClass { get; set; } = StateClass.None;
+        public StateClass StateClass { get; set; } = StateClass.Measurement;
         public string UnitOfMeasures { get; set; } = null;
     }
 
