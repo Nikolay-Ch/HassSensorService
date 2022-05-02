@@ -9,7 +9,10 @@ using Syslog.Framework.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
+
+[assembly: AssemblyVersion("1.0.*")]
 
 namespace HassSensorService
 {
@@ -17,14 +20,24 @@ namespace HassSensorService
     {
         public static async Task Main(string[] args)
         {
-            Console.WriteLine("Main: starting");
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            string version = AssemblyName.GetAssemblyName(assembly.Location).Version.ToString();
+
+            Console.WriteLine($"Main: starting. Version: {version}");
             IHost host = null;
             ILogger<Program> logger = null;
             try
             {
-                host = CreateHostBuilder(args).Build();
+                var loadedWorkers = new List<string>();
+
+                host = CreateHostBuilder(args, loadedWorkers).Build();
 
                 logger = host.Services.GetRequiredService<ILogger<Program>>();
+
+                logger?.LogInformation("Main: Load config done...");
+
+                foreach (var worker in loadedWorkers)
+                    logger?.LogInformation("Main: Worker {type} loaded", worker);
 
                 logger?.LogInformation("Main: Waiting for RunAsync to complete");
 
@@ -42,7 +55,7 @@ namespace HassSensorService
             }
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
+        public static IHostBuilder CreateHostBuilder(string[] args, List<string> loadedWorkers) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((ctx, cfg)=>
                 {
@@ -95,10 +108,16 @@ namespace HassSensorService
                     // add each worker as a service and pass deviceId parameter to it
                     foreach (var worker in workers)
                     {
-                        var t = Type.GetType($"{worker.workerType}, HassDeviceWorkers", true);
+                        try
+                        {
+                            var t = Type.GetType($"{worker.workerType}, HassDeviceWorkers", true);
 
-                        services.AddTransient(typeof(IHostedService),
-                            (serviceProvider) => ActivatorUtilities.CreateInstance(serviceProvider, t, worker.deviceUniqueId));
+                            loadedWorkers.Add(worker.workerType);
+
+                            services.AddTransient(typeof(IHostedService),
+                                (serviceProvider) => ActivatorUtilities.CreateInstance(serviceProvider, t, worker.deviceUniqueId));
+                        }
+                        catch { }
                     }
                 });
     }

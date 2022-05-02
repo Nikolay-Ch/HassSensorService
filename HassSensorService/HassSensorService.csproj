@@ -4,6 +4,9 @@
     <TargetFramework>net6.0</TargetFramework>
     <UserSecretsId>dotnet-SensorService-EB9FDD07-0096-4434-835C-498E4E756CFB</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <ProductVersion>3.0.*.*</ProductVersion>
+    <Deterministic>false</Deterministic>
+	<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <ItemGroup>
