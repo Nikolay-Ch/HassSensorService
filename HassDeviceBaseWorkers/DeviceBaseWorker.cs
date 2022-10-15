@@ -3,7 +3,7 @@ using HassSensorConfiguration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MQTTnet;
+using MQTTnet.Client;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -91,8 +91,9 @@ namespace HassDeviceBaseWorkers
                 foreach (var component in ComponentList)
                 {
                     await MqttClient.PublishAsync(
-                        string.Format(MqttConfiguration.ConfigurationTopic,
-                            component.GetType().GetHassComponentTypeString(), component.UniqueId),
+                        $"{MqttConfiguration.ConfigurationTopicBase}/" +
+                        $"{component.GetType().GetHassComponentTypeString()}/" +
+                        $"{component.UniqueId}/config",
                         JsonConvert.SerializeObject(component),
                         MqttConfiguration.MqttQosLevel,
                         true);
