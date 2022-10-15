@@ -19,7 +19,7 @@
         public static AnalogSensorFactory AnalogSensorFactory { get; } = new();
         public static BinarySensorFactory BinarySensorFactory { get; } = new();
 
-        public static DeviceClassDescription None => new();
+        public static DeviceClassDescription None => new() { ValueName = "state" };
 
         #region AnalogSensor
         public static DeviceClassDescription ApparentPower => new()

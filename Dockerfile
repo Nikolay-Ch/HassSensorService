@@ -23,5 +23,6 @@ WORKDIR /app
 COPY --from=publish /app/publish .
 
 VOLUME ./config
+VOLUME ./logs
 
 ENTRYPOINT ["dotnet", "HassSensorService.dll"]

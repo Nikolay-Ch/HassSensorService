@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MQTTnet;
-using MQTTnet.Client.Options;
+using MQTTnet.Client;
 using MQTTnet.Extensions.ManagedClient;
 using MQTTnet.Protocol;
 using System;
@@ -18,6 +18,7 @@ namespace HassMqttIntegration
         Task PublishAsync(string topic, string payload, MqttQualityOfServiceLevel mqttQosLevel);
         Task PublishAsync(string configurationTopic, string configurationPayload, MqttQualityOfServiceLevel mqttQosLevel, bool retain);
         Task SubscribeAsync(IMqttSubscriber subscriber, string v, MqttQualityOfServiceLevel mqttQosLevel);
+        Task UnsubscribeAsync(IMqttSubscriber subscriber, string v);
     }
 
     public class MqttClientForMultipleSubscribers : IMqttClientForMultipleSubscribers
@@ -63,7 +64,7 @@ namespace HassMqttIntegration
                 Thread.Sleep(1000);
             }
 
-            MqttClient.UseApplicationMessageReceivedHandler(async e => await MessageReceive(e));
+            MqttClient.ApplicationMessageReceivedAsync += async e => await MessageReceive(e);
 
             Logger.LogInformation("Creating MqttClient done at: {time}", DateTimeOffset.Now);
         }
@@ -82,10 +83,10 @@ namespace HassMqttIntegration
         }
 
         public async Task PublishAsync(string topic, string payload, MqttQualityOfServiceLevel mqttQosLevel) =>
-            await MqttClient.PublishAsync(topic, payload, mqttQosLevel);
+            await MqttClient.EnqueueAsync(topic, payload, mqttQosLevel);
 
         public async Task PublishAsync(string topic, string payload, MqttQualityOfServiceLevel mqttQosLevel, bool retain) =>
-            await MqttClient.PublishAsync(topic, payload, mqttQosLevel, retain);
+            await MqttClient.EnqueueAsync(topic, payload, mqttQosLevel, retain);
 
         public async Task SubscribeAsync(IMqttSubscriber subscriber, string topic, MqttQualityOfServiceLevel mqttQosLevel)
         {
@@ -100,6 +101,14 @@ namespace HassMqttIntegration
                 await MqttClient.SubscribeAsync(topic, mqttQosLevel);
                 topicSubscribers.Add(subscriber);
             }
+        }
+
+        public async Task UnsubscribeAsync(IMqttSubscriber subscriber, string topic)
+        {
+            if (!Subscribers.Any(e => e.Key == topic))
+                Subscribers.Remove(new KeyValuePair<string, List<IMqttSubscriber>>(topic, new List<IMqttSubscriber>()));
+
+            await MqttClient.UnsubscribeAsync(topic);
         }
     }
 }

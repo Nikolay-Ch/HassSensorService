@@ -1,8 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace HassSensorService
+namespace HassSensorServiceExtensions
 {
     public static class IConfigurationProviderExtensions
     {

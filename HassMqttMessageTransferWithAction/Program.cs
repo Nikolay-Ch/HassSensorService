@@ -1,6 +1,4 @@
-using HassDeviceBaseWorkers;
-using HassDeviceWorkers.ModBus;
-using HassMqttIntegration;
+﻿using HassMqttIntegration;
 using HassSensorServiceExtensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,7 +13,7 @@ using System.Threading.Tasks;
 
 [assembly: AssemblyVersion("1.0.*")]
 
-namespace HassSensorService
+namespace HassMqttMessageTransferWithAction
 {
     public class Program
     {
@@ -58,7 +56,7 @@ namespace HassSensorService
 
         public static IHostBuilder CreateHostBuilder(string[] args, List<string> loadedWorkers) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureAppConfiguration((ctx, cfg)=>
+                .ConfigureAppConfiguration((ctx, cfg) =>
                 {
                     var env = ctx.HostingEnvironment;
 
@@ -83,8 +81,6 @@ namespace HassSensorService
                 .ConfigureServices((hostContext, services) =>
                 {
                     services.Configure<MqttConfiguration>(hostContext.Configuration.GetSection(nameof(MqttConfiguration)));
-                    services.Configure<WorkersConfiguration>(hostContext.Configuration.GetSection(nameof(WorkersConfiguration)));
-                    services.Configure<ModbusGatewayConfiguration>(hostContext.Configuration.GetSection(nameof(ModbusGatewayConfiguration)));
                     services.AddSingleton(typeof(IMqttClientForMultipleSubscribers), typeof(MqttClientForMultipleSubscribers));
 
                     // get all workers

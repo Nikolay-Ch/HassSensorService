@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29324.140
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32210.238
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestApp", "TestApp\TestApp.csproj", "{33A4A7E0-9230-4C5F-B1B2-92F6AEDC8FB3}"
 EndProject
@@ -14,6 +14,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HassSensorConfiguration", "HassSensorConfiguration\HassSensorConfiguration.csproj", "{C83D71FA-EAAA-426B-888B-BAE905CC14AF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HassSensorService", "HassSensorService\HassSensorService.csproj", "{E7D94C0E-E8A9-4EEB-8266-274C440BC5E3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HassMqttMessageTransferWithAction", "HassMqttMessageTransferWithAction\HassMqttMessageTransferWithAction.csproj", "{661436D5-01AD-45EC-A643-FB1E6F64AF08}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HassClassExtensions", "HassClassExtensions\HassClassExtensions.csproj", "{C40C9E63-4723-4821-86C5-933CF7E2D8A3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +49,14 @@ Global
 		{E7D94C0E-E8A9-4EEB-8266-274C440BC5E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E7D94C0E-E8A9-4EEB-8266-274C440BC5E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E7D94C0E-E8A9-4EEB-8266-274C440BC5E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{661436D5-01AD-45EC-A643-FB1E6F64AF08}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{661436D5-01AD-45EC-A643-FB1E6F64AF08}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{661436D5-01AD-45EC-A643-FB1E6F64AF08}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{661436D5-01AD-45EC-A643-FB1E6F64AF08}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C40C9E63-4723-4821-86C5-933CF7E2D8A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C40C9E63-4723-4821-86C5-933CF7E2D8A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C40C9E63-4723-4821-86C5-933CF7E2D8A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C40C9E63-4723-4821-86C5-933CF7E2D8A3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
