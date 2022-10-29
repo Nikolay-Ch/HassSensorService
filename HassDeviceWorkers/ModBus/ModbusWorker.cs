@@ -38,7 +38,7 @@ namespace HassDeviceWorkers.ModBus
                         using var mrr = new ModbusRegisterReader { SerialPort = CreateSerialPort() };
                         await SendWorkerHeartBeat(mrr);
 
-                        Thread.Sleep(500); // waiting to free Modbus
+                        Thread.Sleep(1000); // waiting to free Modbus
                     }
                     catch (Exception ex)
                     {
