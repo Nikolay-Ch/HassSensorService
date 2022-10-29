@@ -1,5 +1,7 @@
 # HassSensorService
-AprilBeacon BLE devices HomeAssistant .net core integration service. Works both on Windows or Linux systems. You can also run it on **Raspberry Pi** or **Orange Pi** microcontrollers, that uses **Raspbian** or **Armbian**. In the this case, you need to add a **Publish profile** in solution with target platform: **ARM-Linux**.
+Custom devices HomeAssistant .net core integration service. Works both on Windows or Linux systems. You can also run it on **Raspberry Pi** or **Orange Pi** microcontrollers, that uses **Raspbian** or **Armbian**. In the this case, you need to add a **Publish profile** in solution with target platform: **ARM-Linux**.
+
+Now support BLE and Modbus devices. Also support custom devices like OS parameters (memory, disk space, processor load). See HassDeviceWorkers folder for details.
 
 AprilBeacon Bluetooth Low Enegry devices integration service.
 Works with [OpenMQTTGateway](https://docs.openmqttgateway.com/) that get advertising data from devices and publish it to MQTT-server.
