@@ -49,7 +49,7 @@ namespace HassDeviceWorkers
             {
                 var payload = CreatePayloadObject();
 
-                var register = new Register(1, 3, "Raw", 0x07, "raw units", RegisterFormat.Hex, 0x00);
+                var register = new Register(4, 3, "Raw", 0x07, "raw units", RegisterFormat.Hex, 0x00);
                 await mrr.ReadRegister(register);
 
                 var zm194 = new RsGzwsN01(register.RawValue);
