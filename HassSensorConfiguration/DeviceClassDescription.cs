@@ -94,6 +94,8 @@
         { DeviceClass = "sulphur_dioxide", ValueName = "so2", UnitOfMeasures = "µg/m³", ComponentFactory = AnalogSensorFactory };
         public static DeviceClassDescription Temperature => new()
         { DeviceClass = "temperature", ValueName = "temp", UnitOfMeasures = "°C", ComponentFactory = AnalogSensorFactory };
+        public static DeviceClassDescription TemperatureCelsius => new()
+        { DeviceClass = "temperature", ValueName = "tempc", UnitOfMeasures = "°C", ComponentFactory = AnalogSensorFactory };
         public static DeviceClassDescription Timestamp => new()
         { DeviceClass = "timestamp", ValueName = "ts", ComponentFactory = AnalogSensorFactory };
         public static DeviceClassDescription VolatileOrganicCompounds => new()
