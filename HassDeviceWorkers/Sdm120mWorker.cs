@@ -52,7 +52,7 @@ namespace HassDeviceWorkers
                 var payload = CreatePayloadObject();
 
                 var register = new Register(2, 4, "Raw", 0x48, "raw units", RegisterFormat.Hex, 0x00);
-                mrr.ReadRegister(register);
+                await mrr.ReadRegister(register);
 
                 var sdm120 = new Sdm120(register.RawValue);
 
