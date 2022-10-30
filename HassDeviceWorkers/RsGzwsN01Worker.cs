@@ -56,7 +56,7 @@ namespace HassDeviceWorkers
 
                 payload.Add(new JProperty(GetValueName("tempc"), zm194.Temperature));
                 payload.Add(new JProperty(GetValueName("hum"), zm194.Humidity));
-                //payload.Add(new JProperty(GetValueName("lux"), zm194.LightIntensity));
+                payload.Add(new JProperty(GetValueName("lux"), zm194.LightIntensity));
 
                 // send message
                 await SendDeviceInformation(ComponentList[0], payload);
