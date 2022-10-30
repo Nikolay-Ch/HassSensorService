@@ -14,8 +14,8 @@ namespace HassDeviceWorkers
 {
     public class Zm1940d9yWorker : ModbusWorker<Sdm120mWorker>
     {
-        public Zm1940d9yWorker(string deviceId, ILogger<Sdm120mWorker> logger, IOptions<WorkersConfiguration> workersConfiguration, IOptions<MqttConfiguration> mqttConfiguration, IOptions<ModbusGatewayConfiguration> modbusGatewayConfiguration, IMqttClientForMultipleSubscribers mqttClient)
-            : base(deviceId, logger, workersConfiguration, mqttConfiguration, modbusGatewayConfiguration, mqttClient)
+        public Zm1940d9yWorker(string deviceId, ILoggerFactory loggerFactory, IOptions<WorkersConfiguration> workersConfiguration, IOptions<MqttConfiguration> mqttConfiguration, IOptions<ModbusGatewayConfiguration> modbusGatewayConfiguration, IMqttClientForMultipleSubscribers mqttClient)
+            : base(deviceId, loggerFactory, workersConfiguration, mqttConfiguration, modbusGatewayConfiguration, mqttClient)
         {
             var sensorFactory = new AnalogSensorFactory();
             var device = new Device
@@ -54,6 +54,12 @@ namespace HassDeviceWorkers
 
                 var register = new Register(3, 3, "Raw", 0x36, "raw units", RegisterFormat.Hex, 0x00);
                 await mrr.ReadRegister(register);
+
+                if (register.RawValue.Length == 0)
+                {
+                    Logger.LogInformation("Receiving empty data");
+                    return;
+                }
 
                 var zm194 = new Zm1940d9y(register.RawValue);
 

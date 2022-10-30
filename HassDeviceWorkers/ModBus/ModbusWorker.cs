@@ -19,10 +19,13 @@ namespace HassDeviceWorkers.ModBus
         private static readonly SemaphoreSlim semaphoreSlim = new(1, 1);
 
         protected ModbusGatewayConfiguration ModbusGatewayConfiguration { get; }
+        protected ILoggerFactory LoggerFactory { get; }
 
-        public ModbusWorker(string deviceId, ILogger<T> logger, IOptions<WorkersConfiguration> workersConfiguration, IOptions<MqttConfiguration> mqttConfiguration, IOptions<ModbusGatewayConfiguration> modbusGatewayConfiguration, IMqttClientForMultipleSubscribers mqttClient) :
-            base(deviceId, logger, workersConfiguration, mqttConfiguration, mqttClient)
+        public ModbusWorker(string deviceId, ILoggerFactory loggerFactory, IOptions<WorkersConfiguration> workersConfiguration, IOptions<MqttConfiguration> mqttConfiguration, IOptions<ModbusGatewayConfiguration> modbusGatewayConfiguration, IMqttClientForMultipleSubscribers mqttClient) :
+            base(deviceId, loggerFactory.CreateLogger<T>(), workersConfiguration, mqttConfiguration, mqttClient)
         {
+            LoggerFactory = loggerFactory;
+            LoggerFactory.CreateLogger<ModbusWorker<T>>();
             ModbusGatewayConfiguration = modbusGatewayConfiguration.Value;
         }
 
@@ -35,15 +38,16 @@ namespace HassDeviceWorkers.ModBus
                     await semaphoreSlim.WaitAsync();
                     try
                     {
-                        using var mrr = new ModbusRegisterReader { SerialPort = CreateSerialPort() };
-                        await SendWorkerHeartBeat(mrr);
+                        using (var mrr = new ModbusRegisterReader(ModbusGatewayConfiguration,
+                                LoggerFactory.CreateLogger<ModbusRegisterReader>()))
+                            await SendWorkerHeartBeat(mrr);
 
-                        Thread.Sleep(1000); // waiting to free Modbus
+                        Thread.Sleep(500); // waiting to free Modbus
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError(ex,
-                            $"{new StackTrace(ex).GetFrame(0).GetMethod().Name} error '{ex.Message}' at {DateTimeOffset.Now}");
+                        Logger.LogError(ex, "{MethodName} error '{Message}' at {DateTime}",
+                            new StackTrace(ex).GetFrame(0).GetMethod().Name, ex.Message, DateTimeOffset.Now);
                     }
                     finally
                     {
@@ -58,10 +62,5 @@ namespace HassDeviceWorkers.ModBus
         }
 
         protected abstract Task SendWorkerHeartBeat(ModbusRegisterReader mrr);
-
-        private ISerialPort CreateSerialPort() =>
-            new RemoteSerialPort(
-                ModbusGatewayConfiguration.GatewayAddress,
-                ModbusGatewayConfiguration.GatewayPort) { ReadTimeout = 3000 };
     }
 }

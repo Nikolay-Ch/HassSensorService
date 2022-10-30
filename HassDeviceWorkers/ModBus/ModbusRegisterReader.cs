@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -8,9 +9,17 @@ namespace HassDeviceWorkers.ModBus
 {
     public class ModbusRegisterReader : IDisposable
     {
-        private static SemaphoreSlim SemaphoreSlim { get; } = new(1, 1);
+        protected ILogger<ModbusRegisterReader> Logger { get; }
+        protected ISerialPort SerialPort { get; }
 
-        public ISerialPort SerialPort { get; set; }
+        public ModbusRegisterReader(ModbusGatewayConfiguration modbusConfiguration, ILogger<ModbusRegisterReader> logger)
+        {
+            SerialPort = CreateSerialPort(modbusConfiguration.GatewayAddress, modbusConfiguration.GatewayPort);
+
+            Logger = logger;
+        }
+
+        private static SemaphoreSlim SemaphoreSlim { get; } = new(1, 1);
 
         public async Task<int> ReadRegister(Register registerToRead)
         {
@@ -33,7 +42,7 @@ namespace HassDeviceWorkers.ModBus
 
                 SerialPort.Write(bufwrite, 0, bufwrite.Length);
 
-                Thread.Sleep(1000);
+                Thread.Sleep(200);
 
                 // each register = 2 bytes
                 var bytesToRead = registerToRead.Length * 2;
@@ -41,15 +50,24 @@ namespace HassDeviceWorkers.ModBus
                 // address + code + count + bytesToRead + errorCheck (2 bytes)
                 var bufRead = new byte[bytesToRead + 5];
 
+                registerToRead.RawValue = Array.Empty<byte>();
+
                 try
                 {
                     SerialPort.Read(bufRead, 0, bufRead.Length);
-                    registerToRead.RawValue = bufRead.Skip(3).Take(bytesToRead).ToArray();
+
+                    if (bufRead[0] == registerToRead.DeviceId &&
+                            bufRead[1] == registerToRead.FunctionCode &&
+                            bufRead[2] == bytesToRead)
+                        registerToRead.RawValue = bufRead.Skip(3).Take(bytesToRead).ToArray();
+                    else
+                        Logger.LogInformation("Error receiving data for DeviceId!" +
+                            " Expected: {DeviceId}, {FunctionCode}, {ButesToRead}," +
+                            " but receive: {DeviceIdReveived}, {FunctionCodeReceived}, {ButesReceived}",
+                            registerToRead.DeviceId, registerToRead.FunctionCode, bytesToRead,
+                            bufRead[0], bufRead[1], bufRead[2]);
                 }
-                catch (IOException)
-                {
-                    registerToRead.RawValue = Array.Empty<byte>();
-                }
+                catch (IOException) { }
             }
             finally
             {
@@ -62,6 +80,10 @@ namespace HassDeviceWorkers.ModBus
         private static byte LoByte(int addressToRead) => (byte)(addressToRead & 0x00ff);
 
         private static byte HiByte(int addressToRead) => (byte)(addressToRead >> 8);
+
+        private ISerialPort CreateSerialPort(string gatewayAddress, int gatewayPort) =>
+            new RemoteSerialPort(gatewayAddress, gatewayPort) { ReadTimeout = 3000 };
+
 
         #region implementation of IDisposable with Dispose pattern
         private bool disposedValue;

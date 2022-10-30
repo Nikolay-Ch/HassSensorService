@@ -14,8 +14,8 @@ namespace HassDeviceWorkers
 {
     public class RsGzwsN01Worker : ModbusWorker<RsGzwsN01Worker>
     {
-        public RsGzwsN01Worker(string deviceId, ILogger<RsGzwsN01Worker> logger, IOptions<WorkersConfiguration> workersConfiguration, IOptions<MqttConfiguration> mqttConfiguration, IOptions<ModbusGatewayConfiguration> modbusGatewayConfiguration, IMqttClientForMultipleSubscribers mqttClient)
-            : base(deviceId, logger, workersConfiguration, mqttConfiguration, modbusGatewayConfiguration, mqttClient)
+        public RsGzwsN01Worker(string deviceId, ILoggerFactory loggerFactory, IOptions<WorkersConfiguration> workersConfiguration, IOptions<MqttConfiguration> mqttConfiguration, IOptions<ModbusGatewayConfiguration> modbusGatewayConfiguration, IMqttClientForMultipleSubscribers mqttClient)
+            : base(deviceId, loggerFactory, workersConfiguration, mqttConfiguration, modbusGatewayConfiguration, mqttClient)
         {
             //ModbusGatewayConfiguration.SendTimeout = ModbusGatewayConfiguration < 60000
 
@@ -51,6 +51,12 @@ namespace HassDeviceWorkers
 
                 var register = new Register(4, 3, "Raw", 0x07, "raw units", RegisterFormat.Hex, 0x00);
                 await mrr.ReadRegister(register);
+
+                if (register.RawValue.Length == 0)
+                {
+                    Logger.LogInformation("Receiving empty data");
+                    return;
+                }
 
                 var zm194 = new RsGzwsN01(register.RawValue);
 
