@@ -15,6 +15,8 @@ namespace HassMqttIntegration
 {
     public interface IMqttClientForMultipleSubscribers
     {
+        bool IsMqttConnected { get; }
+
         Task PublishAsync(string topic, string payload, MqttQualityOfServiceLevel mqttQosLevel);
         Task PublishAsync(string configurationTopic, string configurationPayload, MqttQualityOfServiceLevel mqttQosLevel, bool retain);
         Task SubscribeAsync(IMqttSubscriber subscriber, string v, MqttQualityOfServiceLevel mqttQosLevel);
@@ -29,6 +31,8 @@ namespace HassMqttIntegration
             new List<KeyValuePair<string, List<IMqttSubscriber>>>();
 
         public IManagedMqttClient MqttClient { get; }
+
+        public bool IsMqttConnected => MqttClient.IsConnected;
 
         public MqttClientForMultipleSubscribers(ILogger<MqttClientForMultipleSubscribers> logger, IOptions<MqttConfiguration> mqttConfiguration)
         {

@@ -40,6 +40,8 @@ namespace HassDeviceWorkers
 
         protected override async Task SendWorkerHeartBeat(ModbusRegisterReader mrr)
         {
+            Logger.LogTrace("SendWorkerHeartBeat: Method starts... {type}", GetType().Name);
+
             string GetValueName(string valueName) => ComponentList
                                                         .Single(e => e.DeviceClassDescription.ValueName == valueName)
                                                         .DeviceClassDescription
@@ -50,9 +52,11 @@ namespace HassDeviceWorkers
                 var payload = CreatePayloadObject();
 
                 var register = new Register(4, 3, "Raw", 0x07, "raw units", RegisterFormat.Hex, 0x00);
-                await mrr.ReadRegister(register);
+                var bytesReaded = await mrr.ReadRegister(register);
 
-                if (register.RawValue.Length == 0)
+                Logger.LogTrace("SendWorkerHeartBeat: Bytes readed from Modbus: {bytesReaded}", bytesReaded);
+
+                if (bytesReaded == 0)
                 {
                     Logger.LogInformation("Receiving empty data");
                     return;
@@ -66,6 +70,8 @@ namespace HassDeviceWorkers
 
                 // send message
                 await SendDeviceInformation(ComponentList[0], payload);
+
+                Logger.LogTrace("SendWorkerHeartBeat: Method ends... {type}", GetType().Name);
             }
             catch (Exception ex)
             {

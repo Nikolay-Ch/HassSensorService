@@ -36,7 +36,7 @@ namespace HassDeviceWorkers.ModBus
                     try
                     {
                         var mrr = new ModbusRegisterReader(ModbusGatewayConfiguration, LoggerFactory.CreateLogger<ModbusRegisterReader>());
-                        await SendWorkerHeartBeat(mrr);
+                        SendWorkerHeartBeat(mrr).Wait();
                     }
                     catch (Exception ex)
                     {

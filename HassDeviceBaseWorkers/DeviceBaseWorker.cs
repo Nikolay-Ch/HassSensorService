@@ -115,6 +115,9 @@ namespace HassDeviceBaseWorkers
         {
             try
             {
+                Logger.LogTrace("SendDeviceInformation: Method starts... {type}, MqttClient is connected: {connected}",
+                    typeof(T).Name, MqttClient.IsMqttConnected);
+
                 // send message
                 await MqttClient.PublishAsync(
                     component
@@ -125,6 +128,8 @@ namespace HassDeviceBaseWorkers
 
                 Logger.LogInformation("{type} send information message: {payload} at {time}",
                     typeof(T).Name, payload, DateTimeOffset.Now);
+
+                Logger.LogTrace("SendDeviceInformation: Method ends... {type}", typeof(T).Name);
             }
             catch (Exception ex)
             {

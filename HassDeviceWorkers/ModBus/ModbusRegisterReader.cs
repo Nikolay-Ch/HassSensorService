@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -22,17 +23,21 @@ namespace HassDeviceWorkers.ModBus
         private static SemaphoreSlim SemaphoreSlim { get; } = new(1, 1);
         public async Task<int> ReadRegister(Register registerToRead)
         {
-            Logger.LogTrace("ReadRegister method starts... DeviceId={deviceId}",
-                registerToRead.DeviceId);
-
             try
             {
+                Logger.LogTrace("ReadRegister: Method starts, waiting for semaphore... DeviceId={deviceId}",
+                    registerToRead.DeviceId);
+
                 await SemaphoreSlim.WaitAsync();
+
+                Logger.LogTrace("ReadRegister: Semaphore opened... DeviceId={deviceId}",
+                    registerToRead.DeviceId);
 
                 using var serialPort = CreateSerialPort();
 
-                Logger.LogTrace("Wait to quite on the Modbus... DeviceId={deviceId}",
+                Logger.LogTrace("ReadRegister: Wait to quite on the Modbus... DeviceId={deviceId}",
                     registerToRead.DeviceId);
+                
                 // wait to quite on the Modbus
                 Thread.Sleep(200);
 
@@ -52,10 +57,10 @@ namespace HassDeviceWorkers.ModBus
                 try
                 {
                     serialPort.Write(bufWrite, 0, bufWrite.Length);
-                    Logger.LogTrace("Send data to Modbus: DeviceId={DeviceId}, {buf}",
+                    Logger.LogTrace("ReadRegister: Send data to Modbus: DeviceId={DeviceId}, {buf}",
                         registerToRead.DeviceId, Convert.ToHexString(bufWrite));
 
-                    Logger.LogTrace("Wait to request forming on the Modbus... DeviceId={deviceId}",
+                    Logger.LogTrace("ReadRegister: Wait to request forming on the Modbus... DeviceId={deviceId}",
                         registerToRead.DeviceId);
                     // wait to request forming on the Modbus
                     Thread.Sleep(200);
@@ -69,7 +74,7 @@ namespace HassDeviceWorkers.ModBus
                     registerToRead.RawValue = Array.Empty<byte>();
 
                     serialPort.Read(bufRead, 0, bufRead.Length);
-                    Logger.LogTrace("Receive data from Modbus: DeviceId={DeviceId}, {buf}",
+                    Logger.LogTrace("ReadRegister: Receive data from Modbus: DeviceId={DeviceId}, {buf}",
                         registerToRead.DeviceId, Convert.ToHexString(bufRead));
 
                     if (bufRead[0] == registerToRead.DeviceId &&
@@ -77,23 +82,35 @@ namespace HassDeviceWorkers.ModBus
                             bufRead[2] == bytesToRead)
                         registerToRead.RawValue = bufRead.Skip(3).Take(bytesToRead).ToArray();
                     else
-                        Logger.LogInformation("Error receiving data for DeviceId!" +
+                        Logger.LogInformation("ReadRegister: Error receiving data for DeviceId!" +
                             " Expected: {DeviceId}, {FunctionCode}, {ButesToRead}," +
                             " but receive: {DeviceIdReveived}, {FunctionCodeReceived}, {ButesReceived}",
                             registerToRead.DeviceId, registerToRead.FunctionCode, bytesToRead,
                             bufRead[0], bufRead[1], bufRead[2]);
                 }
-                catch (IOException) { }
+                catch (IOException ex)
+                {
+                    Logger.LogError(ex, "{MethodName} I/O error '{Message}' at {DateTime}",
+                        new StackTrace(ex).GetFrame(0).GetMethod().Name, ex.Message, DateTimeOffset.Now);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "{MethodName} error '{Message}' at {DateTime}",
+                        new StackTrace(ex).GetFrame(0).GetMethod().Name, ex.Message, DateTimeOffset.Now);
+                }
+
+                Logger.LogTrace("ReadRegister: Method ends... DeviceId={deviceId}",
+                    registerToRead.DeviceId);
+
+                return registerToRead.RawValue.Length;
             }
             finally
             {
                 SemaphoreSlim.Release();
+
+                Logger.LogTrace("ReadRegister: Free semaphore... DeviceId={deviceId}",
+                    registerToRead.DeviceId);
             }
-
-            Logger.LogTrace("ReadRegister method ends... DeviceId={deviceId}",
-                registerToRead.DeviceId);
-
-            return registerToRead.RawValue.Length;
         }
 
         private static byte LoByte(int addressToRead) => (byte)(addressToRead & 0x00ff);
