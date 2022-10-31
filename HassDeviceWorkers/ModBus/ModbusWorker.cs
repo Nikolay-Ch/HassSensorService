@@ -16,8 +16,6 @@ namespace HassDeviceWorkers.ModBus
     /// <typeparam name="T"></typeparam>
     public abstract class ModbusWorker<T> : DeviceBaseWorker<T>
     {
-        private static readonly SemaphoreSlim semaphoreSlim = new(1, 1);
-
         protected ModbusGatewayConfiguration ModbusGatewayConfiguration { get; }
         protected ILoggerFactory LoggerFactory { get; }
 
@@ -35,23 +33,15 @@ namespace HassDeviceWorkers.ModBus
             {
                 while (!stoppingToken.IsCancellationRequested)
                 {
-                    await semaphoreSlim.WaitAsync();
                     try
                     {
-                        using (var mrr = new ModbusRegisterReader(ModbusGatewayConfiguration,
-                                LoggerFactory.CreateLogger<ModbusRegisterReader>()))
-                            await SendWorkerHeartBeat(mrr);
-
-                        Thread.Sleep(500); // waiting to free Modbus
+                        var mrr = new ModbusRegisterReader(ModbusGatewayConfiguration, LoggerFactory.CreateLogger<ModbusRegisterReader>());
+                        await SendWorkerHeartBeat(mrr);
                     }
                     catch (Exception ex)
                     {
                         Logger.LogError(ex, "{MethodName} error '{Message}' at {DateTime}",
                             new StackTrace(ex).GetFrame(0).GetMethod().Name, ex.Message, DateTimeOffset.Now);
-                    }
-                    finally
-                    {
-                        semaphoreSlim.Release();
                     }
 
                     await Task.Delay(ModbusGatewayConfiguration.SendTimeout, stoppingToken);

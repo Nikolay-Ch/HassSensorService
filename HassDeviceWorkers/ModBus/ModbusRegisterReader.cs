@@ -7,54 +7,70 @@ using System.Threading.Tasks;
 
 namespace HassDeviceWorkers.ModBus
 {
-    public class ModbusRegisterReader : IDisposable
+    public class ModbusRegisterReader
     {
         protected ILogger<ModbusRegisterReader> Logger { get; }
-        protected ISerialPort SerialPort { get; }
+        protected ModbusGatewayConfiguration ModbusGatewayConfiguration { get; }
 
-        public ModbusRegisterReader(ModbusGatewayConfiguration modbusConfiguration, ILogger<ModbusRegisterReader> logger)
+        public ModbusRegisterReader(ModbusGatewayConfiguration modbusGatewayConfiguration, ILogger<ModbusRegisterReader> logger)
         {
-            SerialPort = CreateSerialPort(modbusConfiguration.GatewayAddress, modbusConfiguration.GatewayPort);
+            ModbusGatewayConfiguration = modbusGatewayConfiguration;
 
             Logger = logger;
         }
 
         private static SemaphoreSlim SemaphoreSlim { get; } = new(1, 1);
-
         public async Task<int> ReadRegister(Register registerToRead)
         {
-            await SemaphoreSlim.WaitAsync();
+            Logger.LogTrace("ReadRegister method starts... DeviceId={deviceId}",
+                registerToRead.DeviceId);
 
             try
             {
-                var bufwrite = new byte[8];
-                bufwrite[0] = registerToRead.DeviceId;
-                bufwrite[1] = registerToRead.FunctionCode;
-                bufwrite[2] = HiByte(registerToRead.Address);
-                bufwrite[3] = LoByte(registerToRead.Address);
-                bufwrite[4] = HiByte(registerToRead.Length);
-                bufwrite[5] = LoByte(registerToRead.Length);
+                await SemaphoreSlim.WaitAsync();
 
-                var crc16 = Crc.GetModbusCrc16(bufwrite.Take(6).ToArray());
+                using var serialPort = CreateSerialPort();
 
-                bufwrite[6] = crc16[0];
-                bufwrite[7] = crc16[1];
-
-                SerialPort.Write(bufwrite, 0, bufwrite.Length);
-
+                Logger.LogTrace("Wait to quite on the Modbus... DeviceId={deviceId}",
+                    registerToRead.DeviceId);
+                // wait to quite on the Modbus
                 Thread.Sleep(200);
 
-                // each register = 2 bytes
-                var bytesToRead = registerToRead.Length * 2;
+                var bufWrite = new byte[8];
+                bufWrite[0] = registerToRead.DeviceId;
+                bufWrite[1] = registerToRead.FunctionCode;
+                bufWrite[2] = HiByte(registerToRead.Address);
+                bufWrite[3] = LoByte(registerToRead.Address);
+                bufWrite[4] = HiByte(registerToRead.Length);
+                bufWrite[5] = LoByte(registerToRead.Length);
 
-                // address + code + count + bytesToRead + errorCheck (2 bytes)
-                var bufRead = new byte[bytesToRead + 5];
+                var crc16 = Crc.GetModbusCrc16(bufWrite.Take(6).ToArray());
 
-                registerToRead.RawValue = Array.Empty<byte>();
+                bufWrite[6] = crc16[0];
+                bufWrite[7] = crc16[1];
 
                 try
                 {
-                    SerialPort.Read(bufRead, 0, bufRead.Length);
+                    serialPort.Write(bufWrite, 0, bufWrite.Length);
+                    Logger.LogTrace("Send data to Modbus: DeviceId={DeviceId}, {buf}",
+                        registerToRead.DeviceId, Convert.ToHexString(bufWrite));
+
+                    Logger.LogTrace("Wait to request forming on the Modbus... DeviceId={deviceId}",
+                        registerToRead.DeviceId);
+                    // wait to request forming on the Modbus
+                    Thread.Sleep(200);
+
+                    // each register = 2 bytes
+                    var bytesToRead = registerToRead.Length * 2;
+
+                    // address + code + count + bytesToRead + errorCheck (2 bytes)
+                    var bufRead = new byte[bytesToRead + 5];
+
+                    registerToRead.RawValue = Array.Empty<byte>();
+
+                    serialPort.Read(bufRead, 0, bufRead.Length);
+                    Logger.LogTrace("Receive data from Modbus: DeviceId={DeviceId}, {buf}",
+                        registerToRead.DeviceId, Convert.ToHexString(bufRead));
 
                     if (bufRead[0] == registerToRead.DeviceId &&
                             bufRead[1] == registerToRead.FunctionCode &&
@@ -74,6 +90,9 @@ namespace HassDeviceWorkers.ModBus
                 SemaphoreSlim.Release();
             }
 
+            Logger.LogTrace("ReadRegister method ends... DeviceId={deviceId}",
+                registerToRead.DeviceId);
+
             return registerToRead.RawValue.Length;
         }
 
@@ -81,39 +100,9 @@ namespace HassDeviceWorkers.ModBus
 
         private static byte HiByte(int addressToRead) => (byte)(addressToRead >> 8);
 
-        private ISerialPort CreateSerialPort(string gatewayAddress, int gatewayPort) =>
-            new RemoteSerialPort(gatewayAddress, gatewayPort) { ReadTimeout = 3000 };
-
-
-        #region implementation of IDisposable with Dispose pattern
-        private bool disposedValue;
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                    SerialPort.Dispose();
-
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
-                disposedValue = true;
-            }
-        }
-
-        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        // ~ModbusRegisterReader()
-        // {
-        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        //     Dispose(disposing: false);
-        // }
-
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-        #endregion
+        private ISerialPort CreateSerialPort() =>
+            new RemoteSerialPort(
+                ModbusGatewayConfiguration.GatewayAddress,
+                ModbusGatewayConfiguration.GatewayPort) { ReadTimeout = 3000 };
     }
 }
