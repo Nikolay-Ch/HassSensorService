@@ -8,17 +8,10 @@ using System.Threading.Tasks;
 
 namespace HassDeviceWorkers.ModBus
 {
-    public class ModbusRegisterReader
+    public class ModbusRegisterReader(ModbusGatewayConfiguration modbusGatewayConfiguration, ILogger<ModbusRegisterReader> logger)
     {
-        protected ILogger<ModbusRegisterReader> Logger { get; }
-        protected ModbusGatewayConfiguration ModbusGatewayConfiguration { get; }
-
-        public ModbusRegisterReader(ModbusGatewayConfiguration modbusGatewayConfiguration, ILogger<ModbusRegisterReader> logger)
-        {
-            ModbusGatewayConfiguration = modbusGatewayConfiguration;
-
-            Logger = logger;
-        }
+        protected ILogger<ModbusRegisterReader> Logger { get; } = logger;
+        protected ModbusGatewayConfiguration ModbusGatewayConfiguration { get; } = modbusGatewayConfiguration;
 
         private static SemaphoreSlim SemaphoreSlim { get; } = new(1, 1);
         public async Task<int> ReadRegister(Register registerToRead)
@@ -37,7 +30,7 @@ namespace HassDeviceWorkers.ModBus
 
                 Logger.LogTrace("ReadRegister: Wait to quite on the Modbus... DeviceId={deviceId}",
                     registerToRead.DeviceId);
-                
+
                 // wait to quite on the Modbus
                 Thread.Sleep(200);
 
@@ -71,7 +64,7 @@ namespace HassDeviceWorkers.ModBus
                     // address + code + count + bytesToRead + errorCheck (2 bytes)
                     var bufRead = new byte[bytesToRead + 5];
 
-                    registerToRead.RawValue = Array.Empty<byte>();
+                    registerToRead.RawValue = [];
 
                     serialPort.Read(bufRead, 0, bufRead.Length);
                     Logger.LogTrace("ReadRegister: Receive data from Modbus: DeviceId={DeviceId}, {buf}",
@@ -117,9 +110,8 @@ namespace HassDeviceWorkers.ModBus
 
         private static byte HiByte(int addressToRead) => (byte)(addressToRead >> 8);
 
-        private ISerialPort CreateSerialPort() =>
-            new RemoteSerialPort(
-                ModbusGatewayConfiguration.GatewayAddress,
-                ModbusGatewayConfiguration.GatewayPort) { ReadTimeout = 3000 };
+        private RemoteSerialPort CreateSerialPort() =>
+            new(ModbusGatewayConfiguration.GatewayAddress, ModbusGatewayConfiguration.GatewayPort)
+            { ReadTimeout = 3000 };
     }
 }

@@ -29,7 +29,7 @@ namespace HassSensorService
             ILogger<Program> logger = null;
             try
             {
-                var loadedWorkers = new List<string>();
+                List<string> loadedWorkers = [];
 
                 host = CreateHostBuilder(args, loadedWorkers).Build();
 
@@ -101,7 +101,7 @@ namespace HassSensorService
 
 #if DEBUG
                     var provider = (((ConfigurationRoot)hostContext.Configuration).Providers).Last();
-                    foreach (var key in provider.GetFullKeyNames(null, new HashSet<string>()).OrderBy(p => p))
+                    foreach (var key in provider.GetFullKeyNames(null, []).OrderBy(p => p))
                         if (provider.TryGet(key, out var value))
                             Console.WriteLine($"{key}={value}");
 #endif

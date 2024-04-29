@@ -26,8 +26,8 @@ namespace HassDeviceWorkers
                 Model = "Light intensity with temperature and humidity sensor",
                 Manufacturer = "Wangzi",
                 ViaDevice = WorkersConfiguration.ServiceName,
-                Identifiers = new() { DeviceId },
-                Connections = new() { new() { "mac", DeviceId } }
+                Identifiers = [DeviceId],
+                Connections = [new() { "mac", DeviceId }]
             };
 
             ComponentList.AddRange(new List<IHassComponent>

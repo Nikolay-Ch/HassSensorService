@@ -7,17 +7,10 @@ using System.Threading.Tasks;
 
 namespace HassDeviceWorkers
 {
-    public class RsGzwsN01
+    public class RsGzwsN01(byte[] rawModBusData)
     {
-        public RsGzwsN01(byte[] rawModBusData)
-        {
-            Temperature = BitConverter.ToInt16(rawModBusData.SubArray(0x02, 2).Reverse().ToArray()) / (double)10;
-            Humidity = BitConverter.ToUInt16(rawModBusData.SubArray(0x00, 2).Reverse().ToArray()) / (double)10;
-            LightIntensity = BitConverter.ToUInt32(rawModBusData.SubArray(0x04, 4).Reverse().ToArray());
-        }
-
-        public double Temperature { get; }
-        public double Humidity { get; }
-        public uint LightIntensity { get; }
+        public double Temperature { get; } = BitConverter.ToInt16(rawModBusData.SubArray(0x02, 2).Reverse().ToArray()) / (double)10;
+        public double Humidity { get; } = BitConverter.ToUInt16(rawModBusData.SubArray(0x00, 2).Reverse().ToArray()) / (double)10;
+        public uint LightIntensity { get; } = BitConverter.ToUInt32(rawModBusData.SubArray(0x04, 4).Reverse().ToArray());
     }
 }

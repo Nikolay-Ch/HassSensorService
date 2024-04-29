@@ -13,31 +13,22 @@ using System.Threading.Tasks;
 
 namespace HassDeviceBaseWorkers
 {
-    public class DeviceBaseWorker<T> : BackgroundService, IMqttSubscriber
+    public class DeviceBaseWorker<T>(string deviceId, ILogger<T> logger, IOptions<WorkersConfiguration> workersConfiguration, IOptions<MqttConfiguration> mqttConfiguration, IMqttClientForMultipleSubscribers mqttClient) : BackgroundService, IMqttSubscriber
     {
-        protected ILogger<T> Logger { get; }
-        protected WorkersConfiguration WorkersConfiguration { get; }
-        protected MqttConfiguration MqttConfiguration { get; }
-        protected IMqttClientForMultipleSubscribers MqttClient { get; set; }
+        protected ILogger<T> Logger { get; } = logger;
+        protected WorkersConfiguration WorkersConfiguration { get; } = workersConfiguration.Value;
+        protected MqttConfiguration MqttConfiguration { get; } = mqttConfiguration.Value;
+        protected IMqttClientForMultipleSubscribers MqttClient { get; set; } = mqttClient;
 
         // service tasks, that we start to work
-        protected List<Task> WorkingTasks { get; set; } = new List<Task>();
+        protected List<Task> WorkingTasks { get; set; } = [];
 
-        protected virtual string DeviceId { get; }
+        protected virtual string DeviceId { get; } = deviceId;
 
-        protected List<IHassComponent> ComponentList { get; } = new List<IHassComponent>();
+        protected List<IHassComponent> ComponentList { get; } = [];
 
         public virtual async Task MqttReceiveHandler(MqttApplicationMessageReceivedEventArgs e) =>
             await Task.CompletedTask;
-
-        public DeviceBaseWorker(string deviceId, ILogger<T> logger, IOptions<WorkersConfiguration> workersConfiguration, IOptions<MqttConfiguration> mqttConfiguration, IMqttClientForMultipleSubscribers mqttClient)
-        {
-            DeviceId = deviceId;
-            Logger = logger;
-            WorkersConfiguration = workersConfiguration.Value;
-            MqttConfiguration = mqttConfiguration.Value;
-            MqttClient = mqttClient;
-        }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -59,7 +50,7 @@ namespace HassDeviceBaseWorkers
                         await Task.Delay(30000, stoppingToken);
 
                     // wait to all work tasks finished
-                    Task.WaitAll(WorkingTasks.ToArray(), 5000, stoppingToken);
+                    _ = Task.WaitAll([.. WorkingTasks], 5000, stoppingToken);
                 }
                 catch (TaskCanceledException) { }
 

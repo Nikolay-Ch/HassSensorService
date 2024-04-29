@@ -24,8 +24,8 @@ namespace HassDeviceWorkers
                 Model = "Power Meter SDM120M",
                 Manufacturer = "Eastron",
                 ViaDevice = WorkersConfiguration.ServiceName,
-                Identifiers = new() { DeviceId },
-                Connections = new() { new() { "mac", DeviceId } }
+                Identifiers = [DeviceId],
+                Connections = [["mac", DeviceId]]
             };
 
             ComponentList.AddRange(new List<IHassComponent>

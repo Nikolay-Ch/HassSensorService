@@ -24,8 +24,8 @@ namespace HassDeviceWorkers
                 Model = "3-Phase Power Meter ZM194-D9Y",
                 Manufacturer = "ZM",
                 ViaDevice = WorkersConfiguration.ServiceName,
-                Identifiers = new() { DeviceId },
-                Connections = new() { new() { "mac", DeviceId } }
+                Identifiers = [DeviceId],
+                Connections = [["mac", DeviceId]]
             };
 
             ComponentList.AddRange(new List<IHassComponent>

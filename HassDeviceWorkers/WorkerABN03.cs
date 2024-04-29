@@ -32,8 +32,8 @@ namespace HassDeviceWorkers
                 Model = "ABSensor N03",
                 Manufacturer = "April Brother",
                 ViaDevice = WorkersConfiguration.ServiceName,
-                Identifiers = new() { DeviceId },
-                Connections = new() { new() { "mac", DeviceId } }
+                Identifiers = [DeviceId],
+                Connections = [["mac", DeviceId]]
             };
 
             ComponentList.AddRange(new List<IHassComponent>

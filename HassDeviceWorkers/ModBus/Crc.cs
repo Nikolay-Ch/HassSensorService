@@ -4,8 +4,8 @@ namespace HassDeviceWorkers.ModBus
 {
     public class Crc
     {
-        protected static uint[] CrcTable = new uint[256]
-        {
+        protected static readonly uint[] CrcTable =
+        [
             0u, 49345u, 49537u, 320u, 49921u, 960u, 640u, 49729u, 50689u, 1728u,
             1920u, 51009u, 1280u, 50625u, 50305u, 1088u, 52225u, 3264u, 3456u, 52545u,
             3840u, 53185u, 52865u, 3648u, 2560u, 51905u, 52097u, 2880u, 51457u, 2496u,
@@ -32,7 +32,7 @@ namespace HassDeviceWorkers.ModBus
             35457u, 19008u, 19968u, 36545u, 36737u, 20288u, 36097u, 19904u, 19584u, 35905u,
             17408u, 33985u, 34177u, 17728u, 34561u, 18368u, 18048u, 34369u, 33281u, 17088u,
             17280u, 33601u, 16640u, 33217u, 32897u, 16448u
-        };
+        ];
 
         public static byte[] QuickGetModbusCrc16(byte[] bytes)
         {
@@ -71,7 +71,7 @@ namespace HassDeviceWorkers.ModBus
                 }
             }
 
-            return new byte[] { crcRegister_L, crcRegister_H };
+            return [crcRegister_L, crcRegister_H];
         }
     }
 }

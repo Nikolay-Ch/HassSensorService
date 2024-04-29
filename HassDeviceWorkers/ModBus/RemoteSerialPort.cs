@@ -2,9 +2,9 @@
 
 namespace HassDeviceWorkers.ModBus
 {
-    class RemoteSerialPort : ISerialPort
+    class RemoteSerialPort(string hostname, int port) : ISerialPort
     {
-        TcpClient TcpClient { get; set; }
+        TcpClient TcpClient { get; set; } = new TcpClient(hostname, port);
         public int ReadTimeout
         {
             get => TcpClient.ReceiveTimeout;
@@ -13,11 +13,6 @@ namespace HassDeviceWorkers.ModBus
                 TcpClient.ReceiveTimeout = ReadTimeout;
                 TcpClient.GetStream().ReadTimeout = value;
             }
-        }
-
-        public RemoteSerialPort(string hostname, int port)
-        {
-            TcpClient = new TcpClient(hostname, port);
         }
 
         public int Read(byte[] buffer, int offset, int count) =>

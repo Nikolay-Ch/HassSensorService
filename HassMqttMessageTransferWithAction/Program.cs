@@ -97,7 +97,7 @@ namespace HassMqttMessageTransferWithAction
 
 #if DEBUG
                     var provider = (((ConfigurationRoot)hostContext.Configuration).Providers).Last();
-                    foreach (var key in provider.GetFullKeyNames(null, new HashSet<string>()).OrderBy(p => p))
+                    foreach (var key in provider.GetFullKeyNames(null, []).OrderBy(p => p))
                         if (provider.TryGet(key, out var value))
                             Console.WriteLine($"{key}={value}");
 #endif

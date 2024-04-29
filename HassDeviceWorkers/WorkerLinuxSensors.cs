@@ -28,10 +28,11 @@ namespace HassDeviceWorkers
         public string Name => $"OS-TEMP-{Type}{Id}"; // for identification purposes...
     }
 
+
     /// <summary>
     /// Send Unix-metrict to HomeAssistant
     /// </summary>
-    class WorkerLinuxSensors : DeviceBaseWorker<WorkerLinuxSensors>
+    partial class WorkerLinuxSensors : DeviceBaseWorker<WorkerLinuxSensors>
     {
         public int SendTimeout { get; set; } = 30000;
 
@@ -72,7 +73,7 @@ namespace HassDeviceWorkers
                 Name = "OS-Sensor",
                 Model = "V1",
                 ViaDevice = WorkersConfiguration.ServiceName,
-                Identifiers = new() { DeviceId },
+                Identifiers = [DeviceId],
                 Connections = allAddresses
             };
 
@@ -177,7 +178,7 @@ namespace HassDeviceWorkers
                 .EnumerateDirectories(ThermalZonesPath, "thermal_zone*")
                 .Select(e => new ThermalZone
                 {
-                    Id = Regex.Match(e, @"\d+$").Value,
+                    Id = IdRegex().Match(e).Value,
                     Path = e,
                     Type = new FileInfo(Path.Combine(e, "type")).OpenText().ReadLine()
                 }); 
@@ -237,5 +238,7 @@ namespace HassDeviceWorkers
             return cpuUsage;
         }
 
+        [GeneratedRegex(@"\d+$")]
+        private static partial Regex IdRegex();
     }
 }

@@ -14,12 +14,12 @@ namespace TestApp
                 {
                     Device = new Device()
                     {
-                        Name = "ABN03",
-                        Model = "ABSensor N03",
-                        Manufacturer = "April Brother",
-                        ViaDevice = "Bla-Bla-Bla",
-                        Identifiers = new List<string>() { "XXXXXXXXXXXX" },
-                        Connections = new List<List<string>>() { new List<string>() { "mac", "XXXXXXXXXXXX" } }
+                        Name = "NAME",
+                        Model = "MODEL NAME",
+                        Manufacturer = "MANUFACTURER",
+                        ViaDevice = "VIA DEVICE",
+                        Identifiers = ["XXXXXXXXXXXX"],
+                        Connections = [["mac", "XXXXXXXXXXXX"]]
                     },
                     StateClass = StateClass.Measurement
                 });

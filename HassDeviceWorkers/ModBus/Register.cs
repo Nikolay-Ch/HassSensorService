@@ -12,16 +12,16 @@ namespace HassDeviceWorkers.ModBus
         OneToThousand = 4
     }
 
-    public class Register
+    public class Register(byte deviceId, byte functionCode, string parameter, int length, string units, RegisterFormat format, int address)
     {
-        public byte DeviceId { get; set; }
-        public byte FunctionCode { get; set; }
-        public string Parameter { get; set; }
-        public int Length { get; set; }
-        public string Units { get; set; } = "";
-        public RegisterFormat Format { get; set; }
-        public int Address { get; set; }
-        public byte[] RawValue { get; set; } = Array.Empty<byte>();
+        public byte DeviceId { get; set; } = deviceId;
+        public byte FunctionCode { get; set; } = functionCode;
+        public string Parameter { get; set; } = parameter;
+        public int Length { get; set; } = length;
+        public string Units { get; set; } = units;
+        public RegisterFormat Format { get; set; } = format;
+        public int Address { get; set; } = address;
+        public byte[] RawValue { get; set; } = [];
         public object Value
         {
             get
@@ -38,17 +38,6 @@ namespace HassDeviceWorkers.ModBus
                     _ => "",
                 };
             }
-        }
-
-        public Register(byte deviceId, byte functionCode, string parameter, int length, string units, RegisterFormat format, int address)
-        {
-            DeviceId = deviceId;
-            FunctionCode = functionCode;
-            Parameter = parameter;
-            Length = length;
-            Units = units;
-            Format = format;
-            Address = address;
         }
 
         public override string ToString() => $"{Parameter}: {Value} {Units}";

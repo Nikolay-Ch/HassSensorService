@@ -6,10 +6,10 @@ namespace HassSensorConfiguration
     public class Device
     {
         [JsonProperty("connections")]
-        public List<List<string>> Connections { get; init; } = new List<List<string>>();
+        public List<List<string>> Connections { get; init; } = [];
 
         [JsonProperty("identifiers")]
-        public List<string> Identifiers { get; init; } = new List<string>();
+        public List<string> Identifiers { get; init; } = [];
 
         [JsonProperty("manufacturer", NullValueHandling = NullValueHandling.Ignore)]
         public string Manufacturer { get; init; }

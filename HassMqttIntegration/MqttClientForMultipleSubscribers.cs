@@ -27,8 +27,7 @@ namespace HassMqttIntegration
     {
         protected ILogger<MqttClientForMultipleSubscribers> Logger { get; }
         protected MqttConfiguration MqttConfiguration { get; }
-        protected List<KeyValuePair<string, List<IMqttSubscriber>>> Subscribers { get; set; } =
-            new List<KeyValuePair<string, List<IMqttSubscriber>>>();
+        protected List<KeyValuePair<string, List<IMqttSubscriber>>> Subscribers { get; set; } = [];
 
         public IManagedMqttClient MqttClient { get; }
 
@@ -95,7 +94,7 @@ namespace HassMqttIntegration
         public async Task SubscribeAsync(IMqttSubscriber subscriber, string topic, MqttQualityOfServiceLevel mqttQosLevel)
         {
             if (!Subscribers.Any(e => e.Key == topic))
-                Subscribers.Add(new KeyValuePair<string, List<IMqttSubscriber>>(topic, new List<IMqttSubscriber>()));
+                Subscribers.Add(new KeyValuePair<string, List<IMqttSubscriber>>(topic, []));
 
             var topicSubscribers = Subscribers.First(e => e.Key == topic).Value;
 
@@ -110,7 +109,7 @@ namespace HassMqttIntegration
         public async Task UnsubscribeAsync(IMqttSubscriber subscriber, string topic)
         {
             if (!Subscribers.Any(e => e.Key == topic))
-                Subscribers.Remove(new KeyValuePair<string, List<IMqttSubscriber>>(topic, new List<IMqttSubscriber>()));
+                Subscribers.Remove(new KeyValuePair<string, List<IMqttSubscriber>>(topic, []));
 
             await MqttClient.UnsubscribeAsync(topic);
         }
