@@ -85,7 +85,7 @@
         public static DeviceClassDescription PressureHpa => new()
         { DeviceClass = "pressure", ValueName = "pres", UnitOfMeasures = "hPa", ComponentFactory = AnalogSensorFactory };
         public static DeviceClassDescription ReactivePower => new()
-        { DeviceClass = "reactive_power", ValueName = "var", UnitOfMeasures = "VAR", ComponentFactory = AnalogSensorFactory };
+        { DeviceClass = "reactive_power", ValueName = "var", UnitOfMeasures = "var", ComponentFactory = AnalogSensorFactory };
         public static DeviceClassDescription SignalStrengthDb => new()
         { DeviceClass = "signal_strength", ValueName = "db", UnitOfMeasures = "dB", ComponentFactory = AnalogSensorFactory };
         public static DeviceClassDescription SignalStrengthDbm => new()

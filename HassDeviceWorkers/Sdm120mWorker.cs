@@ -51,16 +51,15 @@ namespace HassDeviceWorkers
             {
                 var payload = CreatePayloadObject();
 
-                var register = new Register(2, 4, "Raw", 0x48, "raw units", RegisterFormat.Hex, 0x00);
-                await mrr.ReadRegister(register);
+                byte[] bytesReaded = new byte[0x0160 * 2];
 
-                if (register.RawValue.Length == 0)
-                {
-                    Logger.LogInformation("Receiving empty data");
+                if (!await ReadFromModBus(mrr, 0x60, 0x00, bytesReaded))
                     return;
-                }
 
-                var sdm120 = new Sdm120(register.RawValue);
+                if (!await ReadFromModBus(mrr, 0x5e, 0x0102, bytesReaded))
+                    return;
+
+                var sdm120 = new Sdm120(bytesReaded);
 
                 payload.Add(new JProperty(GetValueName("volt"), sdm120.Voltage));
                 payload.Add(new JProperty(GetValueName("amps"), sdm120.Current));
@@ -69,6 +68,7 @@ namespace HassDeviceWorkers
                 payload.Add(new JProperty(GetValueName("va"), sdm120.ApparentPower));
                 payload.Add(new JProperty(GetValueName("pfact"), sdm120.PowerFactor));
                 payload.Add(new JProperty(GetValueName("freqh"), sdm120.Frequency));
+                payload.Add(new JProperty(GetValueName("ekwh"), sdm120.TotalActiveEnergy));
 
                 // send message
                 await SendDeviceInformation(ComponentList[0], payload);
@@ -77,6 +77,21 @@ namespace HassDeviceWorkers
             {
                 Logger.LogError(ex, "{typeName} error at {time}", GetType().Name, DateTimeOffset.Now);
             }
+        }
+
+        private async Task<bool> ReadFromModBus(ModbusRegisterReader reader, int length, int address, byte[] buffer)
+        {
+            Register register = new(2, 4, "Raw", length, "raw units", RegisterFormat.Hex, address);
+            await reader.ReadRegister(register);
+            if (register.RawValue.Length == 0)
+            {
+                Logger.LogInformation("Receiving empty data");
+                return false;
+            }
+
+            register.RawValue.CopyTo(buffer, address * 2);
+
+            return true;
         }
     }
 }
