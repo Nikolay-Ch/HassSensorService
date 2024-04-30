@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\HassDeviceWorkers\HassDeviceWorkers.csproj" />
     <ProjectReference Include="..\HassSensorConfiguration\HassSensorConfiguration.csproj" />
   </ItemGroup>
 
