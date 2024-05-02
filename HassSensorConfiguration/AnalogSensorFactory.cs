@@ -1,16 +1,14 @@
 ﻿namespace HassSensorConfiguration
 {
-    public class AnalogSensorDescription : BaseSensorDescription
+    public record class AnalogSensorDescription : BaseSensorDescription
     {
         public StateClass StateClass { get; set; } = StateClass.Measurement;
-        public string UnitOfMeasures { get; set; } = null;
+        public string? UnitOfMeasures { get; set; } = null;
     }
 
     public class AnalogSensorFactory : IHassComponentFactory
     {
         public string HassStateTopicName { get; set; } = "HassAnalogSensor";
-
-        public BaseSensorDescription CreateSensorDescription() => new AnalogSensorDescription();
 
         public IHassComponent CreateComponent(BaseSensorDescription sensorDescription) =>
             new AnalogSensor

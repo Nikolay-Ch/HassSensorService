@@ -1,42 +1,45 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace HassSensorConfiguration
 {
-    public partial class BinarySensor : IHassComponent
+    public partial record class BinarySensor : IHassComponent
     {
         public string GetConfigTopic() => $"homeassistant/binary_sensor/{UniqueId}/config";
 
         [JsonIgnore]
-        public DeviceClassDescription DeviceClassDescription { get; init; }
+        public required DeviceClassDescription DeviceClassDescription { get; init; }
 
-        [JsonProperty("state_topic")]
-        public string StateTopic { get; init; }
+        [JsonPropertyName("state_topic")]
+        public required string StateTopic { get; init; }
 
-        [JsonProperty("name")]
-        public string Name { get; init; }
+        [JsonPropertyName("name")]
+        public required string Name { get; init; }
 
-        [JsonProperty("unique_id")]
-        public string UniqueId { get; init; }
+        [JsonPropertyName("unique_id")]
+        public required string UniqueId { get; init; }
 
-        [JsonProperty("device_class", NullValueHandling = NullValueHandling.Ignore)]
-        public string DeviceClass { get; init; }
+        [JsonPropertyName("device_class")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? DeviceClass { get; init; } = null;
 
-        [JsonProperty("payload_on")]
-        public string PayloadOn { get; init; }
+        [JsonPropertyName("payload_on")]
+        public required string PayloadOn { get; init; }
 
-        [JsonProperty("payload_off")]
-        public string PayloadOff { get; init; }
+        [JsonPropertyName("payload_off")]
+        public required string PayloadOff { get; init; }
 
-        [JsonProperty("payload_not_available", NullValueHandling = NullValueHandling.Ignore)]
-        public string PayloadNotAvailable { get; init; }
+        [JsonPropertyName("payload_not_available")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? PayloadNotAvailable { get; init; } = null;
 
-        [JsonProperty("icon", NullValueHandling = NullValueHandling.Ignore)]
-        public string Icon { get; init; }
+        [JsonPropertyName("icon")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? Icon { get; init; } = null;
 
-        [JsonProperty("value_template")]
-        public string ValueTemplate { get; init; }
+        [JsonPropertyName("value_template")]
+        public required string ValueTemplate { get; init; }
 
-        [JsonProperty("device")]
-        public Device Device { get; init; }
+        [JsonPropertyName("device")]
+        public required Device Device { get; init; }
     }
 }

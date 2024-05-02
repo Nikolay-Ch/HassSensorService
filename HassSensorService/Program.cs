@@ -22,11 +22,11 @@ namespace HassSensorService
         public static async Task Main(string[] args)
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
-            string version = AssemblyName.GetAssemblyName(assembly.Location).Version.ToString();
+            string version = AssemblyName.GetAssemblyName(assembly.Location).Version?.ToString() ?? "";
 
             Console.WriteLine($"Main: starting. Version: {version}");
-            IHost host = null;
-            ILogger<Program> logger = null;
+            IHost? host = null;
+            ILogger<Program>? logger = null;
             try
             {
                 List<string> loadedWorkers = [];
@@ -94,8 +94,8 @@ namespace HassSensorService
                         .GetChildren()
                         .Select(workerConfig => new
                         {
-                            workerType = workerConfig.GetChildren().First().Key,
-                            deviceUniqueId = workerConfig.GetChildren().First().Value
+                            workerType = workerConfig.GetChildren().First().Key ?? "",
+                            deviceUniqueId = workerConfig.GetChildren().First().Value ?? ""
                         });
 
 
@@ -115,7 +115,8 @@ namespace HassSensorService
 
                             loadedWorkers.Add(worker.workerType);
 
-                            services.AddTransient(typeof(IHostedService),
+                            if (t != null && worker != null)
+                                services.AddTransient(typeof(IHostedService),
                                 (serviceProvider) => ActivatorUtilities.CreateInstance(serviceProvider, t, worker.deviceUniqueId));
                         }
                         catch { }

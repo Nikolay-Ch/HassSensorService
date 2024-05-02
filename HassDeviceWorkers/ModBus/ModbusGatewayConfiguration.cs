@@ -1,9 +1,9 @@
 ﻿namespace HassDeviceWorkers.ModBus
 {
-    public class ModbusGatewayConfiguration
+    public record class ModbusGatewayConfiguration
     {
-        public int SendTimeout { get; set; }
-        public string GatewayAddress { get; set; }
-        public int GatewayPort { get; set; }
+        public required int SendTimeout { get; set; }
+        public required string GatewayAddress { get; set; }
+        public required int GatewayPort { get; set; }
     }
 }

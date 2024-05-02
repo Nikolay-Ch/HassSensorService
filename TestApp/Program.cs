@@ -20,7 +20,8 @@ namespace TestApp
                         Identifiers = ["XXXXXXXXXXXX"],
                         Connections = [["mac", "XXXXXXXXXXXX"]]
                     },
-                    StateClass = StateClass.Measurement
+                    StateClass = StateClass.Measurement,
+                    DeviceClassDescription = new DeviceClassDescription()
                 });
 
             var topic = sensor.GetConfigTopic();

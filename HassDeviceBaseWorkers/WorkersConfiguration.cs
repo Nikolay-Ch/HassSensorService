@@ -1,7 +1,7 @@
 ﻿namespace HassDeviceBaseWorkers
 {
-    public class WorkersConfiguration
+    public record class WorkersConfiguration
     {
-        public string ServiceName { get; set; }
+        public required string ServiceName { get; init; }
     }
 }

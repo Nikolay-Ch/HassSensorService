@@ -1,9 +1,9 @@
-﻿using HassDeviceBaseWorkers;
+﻿using Common;
+using HassDeviceBaseWorkers;
 using HassMqttIntegration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -40,8 +40,7 @@ namespace HassDeviceWorkers.ModBus
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError(ex, "{MethodName} error '{Message}' at {DateTime}",
-                            new StackTrace(ex).GetFrame(0).GetMethod().Name, ex.Message, DateTimeOffset.Now);
+                        Logger?.LogErrorStack(ex);
                     }
 
                     await Task.Delay(ModbusGatewayConfiguration.SendTimeout, stoppingToken);

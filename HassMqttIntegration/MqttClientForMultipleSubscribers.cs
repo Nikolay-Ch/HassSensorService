@@ -7,6 +7,7 @@ using MQTTnet.Protocol;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Authentication;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,15 +41,20 @@ namespace HassMqttIntegration
 
             Logger.LogInformation("Creating MqttClient at: {time}. Uri:{uri}", DateTimeOffset.Now, MqttConfiguration.MqttUri);
 
-            var messageBuilder = new MqttClientOptionsBuilder()
+            var tlsOptions = new MqttClientTlsOptions()
+            {
+                SslProtocol = MqttConfiguration.MqttSecure ? SslProtocols.Tls12 : SslProtocols.None,
+                IgnoreCertificateChainErrors = true,
+                IgnoreCertificateRevocationErrors = true
+            };
+
+            var options = new MqttClientOptionsBuilder()
                 .WithClientId(MqttConfiguration.ClientId.Replace("-", "").Replace(" ", ""))
                 .WithCredentials(MqttConfiguration.MqttUser, MqttConfiguration.MqttUserPassword)
                 .WithTcpServer(MqttConfiguration.MqttUri, MqttConfiguration.MqttPort)
-                .WithCleanSession();
-
-            var options = MqttConfiguration.MqttSecure ?
-                messageBuilder.WithTls().Build() :
-                messageBuilder.Build();
+                .WithCleanSession()
+                .WithTlsOptions(tlsOptions)
+                .Build();
 
             var managedOptions = new ManagedMqttClientOptionsBuilder()
                 .WithAutoReconnectDelay(TimeSpan.FromSeconds(5))

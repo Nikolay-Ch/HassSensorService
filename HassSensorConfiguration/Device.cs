@@ -1,29 +1,32 @@
-﻿using Newtonsoft.Json;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace HassSensorConfiguration
 {
-    public class Device
+    public record class Device
     {
-        [JsonProperty("connections")]
+        [JsonPropertyName("connections")]
         public List<List<string>> Connections { get; init; } = [];
 
-        [JsonProperty("identifiers")]
+        [JsonPropertyName("identifiers")]
         public List<string> Identifiers { get; init; } = [];
 
-        [JsonProperty("manufacturer", NullValueHandling = NullValueHandling.Ignore)]
-        public string Manufacturer { get; init; }
+        [JsonPropertyName("manufacturer")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string Manufacturer { get; init; } = "";
 
-        [JsonProperty("model")]
-        public string Model { get; init; }
+        [JsonPropertyName("model")]
+        public required string Model { get; init; }
 
-        [JsonProperty("name")]
-        public string Name { get; init; }
+        [JsonPropertyName("name")]
+        public required string Name { get; init; }
 
-        [JsonProperty("sw_version", NullValueHandling = NullValueHandling.Ignore)]
-        public string SoftwareVersion { get; init; }
+        [JsonPropertyName("sw_version")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string SoftwareVersion { get; init; } = "";
 
-        [JsonProperty("via_device", NullValueHandling = NullValueHandling.Ignore)]
-        public string ViaDevice { get; init; }
+        [JsonPropertyName("via_device")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public required string ViaDevice { get; init; }
     }
 }

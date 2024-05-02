@@ -6,7 +6,7 @@ using System;
 
 namespace HassMqttIntegration
 {
-    public class MqttConfiguration
+    public record class MqttConfiguration
     {
         protected class GuidDeviceIdComponent : IDeviceIdComponent
         {
@@ -21,14 +21,14 @@ namespace HassMqttIntegration
             .UseFormatter(new StringDeviceIdFormatter(new PlainTextDeviceIdComponentEncoder()))
             .ToString();
 
-        public string MqttUri { get; set; }
-        public string MqttUser { get; set; }
-        public string MqttUserPassword { get; set; }
-        public int MqttPort { get; set; } = 1883;
-        public bool MqttSecure { get; set; } = false;
-        public MqttQualityOfServiceLevel MqttQosLevel { get; set; } = MqttQualityOfServiceLevel.AtMostOnce;
-        public string TopicToSubscribe { get; set; }
-        public string ConfigurationTopicBase { get; set; }
-        public string MqttHomeAssistantHomeTopic { get; set; }
+        public required string MqttUri { get; set; }
+        public required string MqttUser { get; set; }
+        public required string MqttUserPassword { get; set; }
+        public required int MqttPort { get; set; } = 1883;
+        public required bool MqttSecure { get; set; } = false;
+        public required MqttQualityOfServiceLevel MqttQosLevel { get; set; } = MqttQualityOfServiceLevel.AtMostOnce;
+        public required string TopicToSubscribe { get; set; }
+        public required string ConfigurationTopicBase { get; set; }
+        public required string MqttHomeAssistantHomeTopic { get; set; }
     }
 }

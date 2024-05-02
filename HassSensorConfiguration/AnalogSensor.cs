@@ -1,41 +1,45 @@
-﻿using Newtonsoft.Json;
-using System.ComponentModel;
+﻿using System.ComponentModel;
+using System.Text.Json.Serialization;
 
 namespace HassSensorConfiguration
 {
-    public partial class AnalogSensor : IHassComponent
+    public partial record class AnalogSensor : IHassComponent
     {
         public string GetConfigTopic() => $"homeassistant/sensor/{UniqueId}/config";
 
         [JsonIgnore]
-        public DeviceClassDescription DeviceClassDescription { get; init; }
+        public required DeviceClassDescription DeviceClassDescription { get; init; }
 
         [DefaultValue(StateClass.None)]
-        [JsonProperty("state_class", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public StateClass StateClass { get; init; }
+        [JsonPropertyName("state_class")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public required StateClass StateClass { get; init; }
 
-        [JsonProperty("state_topic")]
-        public string StateTopic { get; init; }
+        [JsonPropertyName("state_topic")]
+        public required string StateTopic { get; init; }
 
-        [JsonProperty("name")]
-        public string Name { get; init; }
+        [JsonPropertyName("name")]
+        public required string Name { get; init; }
 
-        [JsonProperty("unique_id")]
-        public string UniqueId { get; init; }
+        [JsonPropertyName("unique_id")]
+        public required string UniqueId { get; init; }
 
-        [JsonProperty("device_class", NullValueHandling = NullValueHandling.Ignore)]
-        public string DeviceClass { get; init; }
+        [JsonPropertyName("device_class")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? DeviceClass { get; init; } = null;
 
-        [JsonProperty("icon", NullValueHandling = NullValueHandling.Ignore)]
-        public string Icon { get; init; }
+        [JsonPropertyName("icon")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? Icon { get; init; } = null;
 
-        [JsonProperty("value_template")]
-        public string ValueTemplate { get; init; }
+        [JsonPropertyName("value_template")]
+        public required string ValueTemplate { get; init; }
 
-        [JsonProperty("unit_of_measurement", NullValueHandling = NullValueHandling.Ignore)]
-        public string UnitOfMeasurement { get; init; }
+        [JsonPropertyName("unit_of_measurement")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? UnitOfMeasurement { get; init; } = null;
 
-        [JsonProperty("device")]
-        public Device Device { get; init; }
+        [JsonPropertyName("device")]
+        public required Device Device { get; init; }
     }
 }

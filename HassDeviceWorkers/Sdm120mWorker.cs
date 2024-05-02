@@ -4,7 +4,6 @@ using HassMqttIntegration;
 using HassSensorConfiguration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -61,14 +60,14 @@ namespace HassDeviceWorkers
 
                 var sdm120 = new Sdm120(bytesReaded);
 
-                payload.Add(new JProperty(GetValueName("volt"), sdm120.Voltage));
-                payload.Add(new JProperty(GetValueName("amps"), sdm120.Current));
-                payload.Add(new JProperty(GetValueName("watt"), sdm120.ActivePower));
-                payload.Add(new JProperty(GetValueName("var"), sdm120.ReactivePower));
-                payload.Add(new JProperty(GetValueName("va"), sdm120.ApparentPower));
-                payload.Add(new JProperty(GetValueName("pfact"), sdm120.PowerFactor));
-                payload.Add(new JProperty(GetValueName("freqh"), sdm120.Frequency));
-                payload.Add(new JProperty(GetValueName("ekwh"), sdm120.TotalActiveEnergy));
+                payload.Add(GetValueName("volt"), sdm120.Voltage);
+                payload.Add(GetValueName("amps"), sdm120.Current);
+                payload.Add(GetValueName("watt"), sdm120.ActivePower);
+                payload.Add(GetValueName("var"), sdm120.ReactivePower);
+                payload.Add(GetValueName("va"), sdm120.ApparentPower);
+                payload.Add(GetValueName("pfact"), sdm120.PowerFactor);
+                payload.Add(GetValueName("freqh"), sdm120.Frequency);
+                payload.Add(GetValueName("ekwh"), sdm120.TotalActiveEnergy);
 
                 // send message
                 await SendDeviceInformation(ComponentList[0], payload);

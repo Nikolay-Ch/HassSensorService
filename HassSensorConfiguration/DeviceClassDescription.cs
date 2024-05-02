@@ -1,11 +1,11 @@
 ﻿namespace HassSensorConfiguration
 {
-    public class DeviceClassDescription
+    public record class DeviceClassDescription
     {
-        public string DeviceClass { get; init; } // name of device class. This property has null-value for non-standard device-classes
-        public string ValueName { get; init; } // name of property, contained value in value-MQTT message
-        public string UnitOfMeasures { get; init; } // contains unit of measures in human-friendly text
-        public IHassComponentFactory ComponentFactory { get; init; } // reference to factory, that creating this type of sensor
+        public string DeviceClass { get; init; } = ""; // name of device class. This property has null-value for non-standard device-classes
+        public string ValueName { get; init; } = ""; // name of property, contained value in value-MQTT message
+        public string UnitOfMeasures { get; init; } = ""; // contains unit of measures in human-friendly text
+        public IHassComponentFactory? ComponentFactory { get; init; } = null; // reference to factory, that creating this type of sensor
 
         public DeviceClassDescription() { }
 
@@ -14,6 +14,7 @@
             DeviceClass = deviceClassDescription.DeviceClass;
             ValueName = deviceClassDescription.ValueName;
             UnitOfMeasures = deviceClassDescription.UnitOfMeasures;
+            ComponentFactory = deviceClassDescription.ComponentFactory;
         }
 
         public static AnalogSensorFactory AnalogSensorFactory { get; } = new();

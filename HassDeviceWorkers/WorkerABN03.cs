@@ -3,13 +3,13 @@ using HassMqttIntegration;
 using HassSensorConfiguration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MQTTnet;
 using MQTTnet.Client;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -67,9 +67,13 @@ namespace HassDeviceWorkers
         {
             try
             {
-                string payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
-                var payloadObj = JObject.Parse(payload);
-                var serviceData = payloadObj.ContainsKey("servicedata") ? payloadObj["servicedata"].Value<string>() : "";
+                string payload = Encoding.UTF8.GetString(e.ApplicationMessage.PayloadSegment);
+                var payloadObj = JsonSerializer.Deserialize<JsonObject>(payload);
+
+                if (payloadObj == null || !payloadObj.TryGetPropertyValue("servicedata", out var serviceDataObj))
+                    return;
+
+                var serviceData = serviceDataObj.Deserialize<string>() ?? "";
 
                 // if serviceData not started with ab03, that we can't parse data - skip parsing
                 if (!serviceData.StartsWith("ab03"))
@@ -95,7 +99,7 @@ namespace HassDeviceWorkers
 
                 // add values into json
                 foreach (var sensor in ComponentList)
-                    payloadObj.Add(sensor.DeviceClassDescription.ValueName, JToken.FromObject(vals[sensor]));
+                    payloadObj.Add(sensor.DeviceClassDescription.ValueName, JsonSerializer.Serialize(vals[sensor]));
 
                 // delete serviceData key, to avoid re-processing of the message
                 payloadObj.Remove("servicedata");

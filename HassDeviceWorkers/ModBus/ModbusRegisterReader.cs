@@ -1,6 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Common;
+using Microsoft.Extensions.Logging;
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -83,13 +83,11 @@ namespace HassDeviceWorkers.ModBus
                 }
                 catch (IOException ex)
                 {
-                    Logger?.LogError(ex, "{MethodName} I/O error '{Message}' at {DateTime}",
-                        new StackTrace(ex).GetFrame(0).GetMethod().Name, ex.Message, DateTimeOffset.Now);
+                    Logger?.LogErrorStack(ex);
                 }
                 catch (Exception ex)
                 {
-                    Logger?.LogError(ex, "{MethodName} error '{Message}' at {DateTime}",
-                        new StackTrace(ex).GetFrame(0).GetMethod().Name, ex.Message, DateTimeOffset.Now);
+                    Logger?.LogErrorStack(ex);
                 }
 
                 Logger?.LogTrace("ReadRegister: Method ends... DeviceId={deviceId}",

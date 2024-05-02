@@ -4,7 +4,7 @@ namespace HassSensorServiceExtensions
 {
     public static class IConfigurationProviderExtensions
     {
-        public static HashSet<string> GetFullKeyNames(this IConfigurationProvider provider, string rootKey, HashSet<string> initialKeys)
+        public static HashSet<string> GetFullKeyNames(this IConfigurationProvider provider, string? rootKey, HashSet<string> initialKeys)
         {
             foreach (var key in provider.GetChildKeys(Enumerable.Empty<string>(), rootKey))
             {

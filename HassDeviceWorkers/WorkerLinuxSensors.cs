@@ -6,7 +6,6 @@ using HassMqttIntegration;
 using HassSensorConfiguration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -20,14 +19,13 @@ using System.Threading.Tasks;
 
 namespace HassDeviceWorkers
 {
-    public class ThermalZone
+    public record class ThermalZone
     {
-        public string Id { get; set; }
-        public string Path { get; set; }
-        public string Type { get; set; }
+        public required string Id { get; set; }
+        public required string Path { get; set; }
+        public required string Type { get; set; }
         public string Name => $"OS-TEMP-{Type}{Id}"; // for identification purposes...
     }
-
 
     /// <summary>
     /// Send Unix-metrict to HomeAssistant
@@ -144,15 +142,15 @@ namespace HassDeviceWorkers
                 var payload = CreatePayloadObject();
 
                 var procUtilizationSensor = ComponentList.Single(e => e.Name == "CPU_Load");
-                payload.Add(new JProperty(procUtilizationSensor.DeviceClassDescription.ValueName, procUtilization.ToString("N2")));
+                payload.Add(procUtilizationSensor.DeviceClassDescription.ValueName, procUtilization.ToString("N2"));
 
                 foreach (var (Name, Value) in osTemps)
                 {
                     // find sensor by valueName
                     var sensor = ComponentList.Single(e => e.UniqueId == $"{Environment.MachineName}-{Name}");
-                    
+
                     // add sensor value into payload
-                    payload.Add(new JProperty(sensor.DeviceClassDescription.ValueName, Value));
+                    payload.Add(sensor.DeviceClassDescription.ValueName, Value);
                 }
 
                 // send message
@@ -180,7 +178,7 @@ namespace HassDeviceWorkers
                 {
                     Id = IdRegex().Match(e).Value,
                     Path = e,
-                    Type = new FileInfo(Path.Combine(e, "type")).OpenText().ReadLine()
+                    Type = new FileInfo(Path.Combine(e, "type")).OpenText().ReadLine() ?? ""
                 }); 
         }
 
@@ -192,7 +190,7 @@ namespace HassDeviceWorkers
             ThermalZones
                 .Select(e => (
                     e.Id,
-                    (double.Parse(new FileInfo(Path.Combine(e.Path, "temp")).OpenText().ReadLine()) / 1000).ToString()
+                    (double.Parse(new FileInfo(Path.Combine(e.Path, "temp")).OpenText().ReadLine() ?? "") / 1000).ToString()
                 ));
 
 

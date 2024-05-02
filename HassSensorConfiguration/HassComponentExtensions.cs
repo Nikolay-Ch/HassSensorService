@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -45,10 +43,6 @@ namespace HassSensorConfiguration
                 _ => typeof(object),
             };
 
-        public static string ChangeJObjectPropertyNames(this string payload) =>
-            ((JObject)JsonConvert.DeserializeObject(payload))
-            .ChangePropertyNames()
-            .ToString();
 
         public static Dictionary<string, string> PropertyMappings => new()
         {
@@ -69,35 +63,6 @@ namespace HassSensorConfiguration
             { "mdl", "model" },
             { "sw", "sw_version" },
         };
-
-        public static JObject ChangePropertyNames(this JObject jo)
-        {
-            foreach (JProperty jp in jo.Properties().ToList())
-            {
-                if (jp.Value.Type == JTokenType.Object)
-                {
-                    ChangePropertyNames((JObject)jp.Value);
-                }
-                else if (jp.Value.Type == JTokenType.Array)
-                {
-                    foreach (JToken child in jp.Value)
-                    {
-                        if (child.Type == JTokenType.Object)
-                        {
-                            ChangePropertyNames((JObject)child);
-                        }
-                    }
-                }
-
-                var resolved = PropertyMappings.TryGetValue(jp.Name, out string resolvedName);
-                if (resolved)
-                {
-                    jp.Replace(new JProperty(resolvedName, jp.Value));
-                }
-            }
-
-            return jo;
-        }
 
         public static List<List<string>> AllComponentAddresses
         {

@@ -4,7 +4,6 @@ using HassMqttIntegration;
 using HassSensorConfiguration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -64,9 +63,9 @@ namespace HassDeviceWorkers
 
                 var zm194 = new RsGzwsN01(register.RawValue);
 
-                payload.Add(new JProperty(GetValueName("tempc"), zm194.Temperature));
-                payload.Add(new JProperty(GetValueName("hum"), zm194.Humidity));
-                payload.Add(new JProperty(GetValueName("lux"), zm194.LightIntensity));
+                payload.Add(GetValueName("tempc"), zm194.Temperature);
+                payload.Add(GetValueName("hum"), zm194.Humidity);
+                payload.Add(GetValueName("lux"), zm194.LightIntensity);
 
                 // send message
                 await SendDeviceInformation(ComponentList[0], payload);

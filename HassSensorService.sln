@@ -15,9 +15,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HassSensorConfiguration", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HassSensorService", "HassSensorService\HassSensorService.csproj", "{E7D94C0E-E8A9-4EEB-8266-274C440BC5E3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HassMqttMessageTransferWithAction", "HassMqttMessageTransferWithAction\HassMqttMessageTransferWithAction.csproj", "{661436D5-01AD-45EC-A643-FB1E6F64AF08}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HassClassExtensions", "HassClassExtensions\HassClassExtensions.csproj", "{C40C9E63-4723-4821-86C5-933CF7E2D8A3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{80E92FEE-07A5-4CB9-916F-60716E4E4FB2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7FA4A8CA-C719-447E-9395-6E3B59D5E6A7}"
+	ProjectSection(SolutionItems) = preProject
+		RuleSet1.ruleset = RuleSet1.ruleset
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -49,14 +54,14 @@ Global
 		{E7D94C0E-E8A9-4EEB-8266-274C440BC5E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E7D94C0E-E8A9-4EEB-8266-274C440BC5E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E7D94C0E-E8A9-4EEB-8266-274C440BC5E3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{661436D5-01AD-45EC-A643-FB1E6F64AF08}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{661436D5-01AD-45EC-A643-FB1E6F64AF08}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{661436D5-01AD-45EC-A643-FB1E6F64AF08}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{661436D5-01AD-45EC-A643-FB1E6F64AF08}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C40C9E63-4723-4821-86C5-933CF7E2D8A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C40C9E63-4723-4821-86C5-933CF7E2D8A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C40C9E63-4723-4821-86C5-933CF7E2D8A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C40C9E63-4723-4821-86C5-933CF7E2D8A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80E92FEE-07A5-4CB9-916F-60716E4E4FB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80E92FEE-07A5-4CB9-916F-60716E4E4FB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80E92FEE-07A5-4CB9-916F-60716E4E4FB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80E92FEE-07A5-4CB9-916F-60716E4E4FB2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

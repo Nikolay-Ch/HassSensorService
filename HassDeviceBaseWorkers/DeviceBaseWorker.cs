@@ -4,10 +4,10 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MQTTnet.Client;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -85,7 +85,7 @@ namespace HassDeviceBaseWorkers
                         $"{MqttConfiguration.ConfigurationTopicBase}/" +
                         $"{component.GetType().GetHassComponentTypeString()}/" +
                         $"{component.UniqueId}/config",
-                        JsonConvert.SerializeObject(component),
+                        JsonSerializer.Serialize(component),
                         MqttConfiguration.MqttQosLevel,
                         true);
 
@@ -99,10 +99,9 @@ namespace HassDeviceBaseWorkers
             }
         }
 
-        protected virtual JObject CreatePayloadObject() =>
-            JObject.FromObject(new { Id = DeviceId, name = $"{DeviceId}" });
+        protected virtual JsonObject CreatePayloadObject() => new() { { "Id", DeviceId }, { "name", $"{DeviceId}" } };
 
-        protected virtual async Task SendDeviceInformation(IHassComponent component, JObject payload)
+        protected virtual async Task SendDeviceInformation(IHassComponent component, JsonObject payload)
         {
             try
             {

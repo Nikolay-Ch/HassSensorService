@@ -1,17 +1,15 @@
 ﻿namespace HassSensorConfiguration
 {
-    public class BinarySensorDescription : BaseSensorDescription
+    public record class BinarySensorDescription : BaseSensorDescription
     {
-        public string PayloadOn { get; set; } = null;
-        public string PayloadOff { get; set; } = null;
-        public string PayloadNotAvailable { get; set; } = null;
+        public string? PayloadOn { get; set; } = null;
+        public string? PayloadOff { get; set; } = null;
+        public string? PayloadNotAvailable { get; set; } = null;
     }
 
     public class BinarySensorFactory : IHassComponentFactory
     {
         public string HassStateTopicName { get; set; } = "HassBinarySensor";
-
-        public BaseSensorDescription CreateSensorDescription() => new BinarySensorDescription();
 
         public IHassComponent CreateComponent(BaseSensorDescription sensorDescription) =>
             new BinarySensor

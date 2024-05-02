@@ -2,7 +2,7 @@
 {
     public interface IHassComponentFactory
     {
-        BaseSensorDescription CreateSensorDescription();
+        //BaseSensorDescription CreateSensorDescription();
         IHassComponent CreateComponent(BaseSensorDescription sensorDescription);
     }
 }

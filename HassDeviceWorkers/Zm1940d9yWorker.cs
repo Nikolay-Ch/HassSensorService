@@ -4,7 +4,6 @@ using HassMqttIntegration;
 using HassSensorConfiguration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -63,14 +62,14 @@ namespace HassDeviceWorkers
 
                 var zm194 = new Zm1940d9y(register.RawValue);
 
-                payload.Add(new JProperty(GetValueName("ph1_volt"), zm194.Phase1Voltage));
-                payload.Add(new JProperty(GetValueName("ph2_volt"), zm194.Phase2Voltage));
-                payload.Add(new JProperty(GetValueName("ph3_volt"), zm194.Phase3Voltage));
-                payload.Add(new JProperty(GetValueName("ln12_volt"), zm194.Line1To2Voltage));
-                payload.Add(new JProperty(GetValueName("ln23_volt"), zm194.Line2To3Voltage));
-                payload.Add(new JProperty(GetValueName("ln31_volt"), zm194.Line3To1Voltage));
-                payload.Add(new JProperty(GetValueName("freqh"), zm194.Frequency));
-                payload.Add(new JProperty(GetValueName("unb_volt"), zm194.VoltageUnbalance));
+                payload.Add(GetValueName("ph1_volt"), zm194.Phase1Voltage);
+                payload.Add(GetValueName("ph2_volt"), zm194.Phase2Voltage);
+                payload.Add(GetValueName("ph3_volt"), zm194.Phase3Voltage);
+                payload.Add(GetValueName("ln12_volt"), zm194.Line1To2Voltage);
+                payload.Add(GetValueName("ln23_volt"), zm194.Line2To3Voltage);
+                payload.Add(GetValueName("ln31_volt"), zm194.Line3To1Voltage);
+                payload.Add(GetValueName("freqh"), zm194.Frequency);
+                payload.Add(GetValueName("unb_volt"), zm194.VoltageUnbalance);
 
                 // send message
                 await SendDeviceInformation(ComponentList[0], payload);
