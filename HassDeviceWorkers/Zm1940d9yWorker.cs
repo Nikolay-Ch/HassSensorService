@@ -19,8 +19,8 @@ namespace HassDeviceWorkers
             var sensorFactory = new AnalogSensorFactory();
             var device = new Device
             {
-                Name = "ZM194-D9Y",
-                Model = "3-Phase Power Meter ZM194-D9Y",
+                Name = $"ZM194-D9Y-{DeviceId[6..]}",
+                Model = "3-Phase Power Meter",
                 Manufacturer = "ZM",
                 ViaDevice = WorkersConfiguration.ServiceName,
                 Identifiers = [DeviceId],

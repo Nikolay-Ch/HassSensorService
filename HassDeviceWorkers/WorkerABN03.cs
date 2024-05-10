@@ -28,7 +28,7 @@ namespace HassDeviceWorkers
             var sensorFactory = new AnalogSensorFactory();
             var device = new Device
             {
-                Name = "ABN03",
+                Name = $"ABN03-{DeviceId[6..]}",
                 Model = "ABSensor N03",
                 Manufacturer = "April Brother",
                 ViaDevice = WorkersConfiguration.ServiceName,

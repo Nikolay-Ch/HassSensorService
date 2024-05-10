@@ -21,7 +21,7 @@ namespace HassDeviceWorkers
             var sensorFactory = new AnalogSensorFactory();
             var device = new Device
             {
-                Name = "RS-GZWS-N01",
+                Name = $"RS-GZWS-N01-{DeviceId[6..]}",
                 Model = "Light intensity with temperature and humidity sensor",
                 Manufacturer = "Wangzi",
                 ViaDevice = WorkersConfiguration.ServiceName,

@@ -17,10 +17,10 @@
                 Device = sensorDescription.Device,
                 DeviceClass = sensorDescription.DeviceClass ?? sensorDescription.DeviceClassDescription.DeviceClass,
                 Icon = sensorDescription.SensorIcon,
-                Name = sensorDescription.SensorName ?? $"{sensorDescription.Device.Name}-{sensorDescription.DeviceClassDescription.ValueName}",
+                Name = sensorDescription.SensorName ?? $"{sensorDescription.Device.Model}-{sensorDescription.DeviceClassDescription.ValueName}",
                 StateClass = ((AnalogSensorDescription)sensorDescription).StateClass,
                 StateTopic = sensorDescription.StateTopic ?? $"+/+/{HassStateTopicName}/{sensorDescription.Device.Identifiers[0]}",
-                UniqueId = sensorDescription.UniqueId ?? $"{sensorDescription.Device.Identifiers[0]}-{sensorDescription.Device.Name}-{sensorDescription.DeviceClassDescription.ValueName}",
+                UniqueId = sensorDescription.UniqueId ?? $"{sensorDescription.Device.Identifiers[0]}-{sensorDescription.DeviceClassDescription.ValueName}",
                 UnitOfMeasurement = ((AnalogSensorDescription)sensorDescription).UnitOfMeasures ?? sensorDescription.DeviceClassDescription.UnitOfMeasures,
                 ValueTemplate = ((AnalogSensorDescription)sensorDescription).ValueTemplate ?? $"{{{{ value_json.{sensorDescription.DeviceClassDescription.ValueName} | is_defined }}}}"
             };

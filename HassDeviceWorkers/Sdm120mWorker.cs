@@ -19,8 +19,8 @@ namespace HassDeviceWorkers
             var sensorFactory = new AnalogSensorFactory();
             var device = new Device
             {
-                Name = "SDM120M",
-                Model = "Power Meter SDM120M",
+                Name = $"SDM120M-{DeviceId}",
+                Model = "Power Meter",
                 Manufacturer = "Eastron",
                 ViaDevice = WorkersConfiguration.ServiceName,
                 Identifiers = [DeviceId],
@@ -36,6 +36,7 @@ namespace HassDeviceWorkers
                 sensorFactory.CreateComponent(new AnalogSensorDescription {DeviceClassDescription = DeviceClassDescription.ApparentPower, Device = device }),
                 sensorFactory.CreateComponent(new AnalogSensorDescription {DeviceClassDescription = DeviceClassDescription.PowerFactor, Device = device }),
                 sensorFactory.CreateComponent(new AnalogSensorDescription {DeviceClassDescription = DeviceClassDescription.FrequencyHz, Device = device }),
+                sensorFactory.CreateComponent(new AnalogSensorDescription {DeviceClassDescription = DeviceClassDescription.EnergyKWh, Device = device }),
             });
         }
 
