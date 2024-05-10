@@ -105,6 +105,11 @@ namespace HassSensorService
                         if (provider.TryGet(key, out var value))
                             Console.WriteLine($"{key}={value}");
 #endif
+                    if (!workers.Any())
+                    {
+                        Console.WriteLine("Warning! No workers found. Program do nothing...");
+                        return;
+                    }
 
                     // add each worker as a service and pass deviceId parameter to it
                     foreach (var worker in workers)
@@ -115,11 +120,20 @@ namespace HassSensorService
 
                             loadedWorkers.Add(worker.workerType);
 
-                            if (t != null && worker != null)
+                            if (t != null)
+                            {
                                 services.AddTransient(typeof(IHostedService),
                                 (serviceProvider) => ActivatorUtilities.CreateInstance(serviceProvider, t, worker.deviceUniqueId));
+
+                                Console.WriteLine($"Worker: {worker.workerType} has been loaded...");
+                            }
+                            else
+                                Console.WriteLine($"Error loading worker from configuration. {worker.workerType}");
                         }
-                        catch { }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Error loading worker {worker.workerType} from configuration. {ex.Message}");
+                        }
                     }
                 });
     }
