@@ -33,7 +33,7 @@ namespace HassDeviceBaseWorkers
         {
             var key = $"{DeviceId}-{propertyName}";
 
-            if (Cache.TryGetValue(key, out var cachedValue) && cachedValue.Equals(value))
+            if (Cache.TryGetValue(key, out var cachedValue) && (cachedValue?.Equals(value) ?? false) )
             {
                 Logger.LogTrace("Value '{Property}' in the cache and is equals to stored in cache '{Value}' - do not inserting into JSON.",
                     propertyName, value);
