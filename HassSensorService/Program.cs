@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using NReco.Logging.File;
 
 [assembly: AssemblyVersion("1.0.*")]
 
@@ -63,7 +64,7 @@ namespace HassSensorService
                     var env = ctx.HostingEnvironment;
 
                     cfg.AddJsonFile("appsettings.json", true, false)
-                        .AddJsonFile("/config/appsettings.json", true, false)
+                        .AddJsonFile("./config/appsettings.json", true, false)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false)
                         .AddEnvironmentVariables()
                         ;
@@ -79,6 +80,9 @@ namespace HassSensorService
                         // Configure structured data here if desired.
                         logging.AddSyslog(settings);
                     }
+
+                    // add logging to file capability
+                    logging.AddFile(ctx.Configuration.GetSection("Logging"));
                 })
                 .ConfigureServices((hostContext, services) =>
                 {

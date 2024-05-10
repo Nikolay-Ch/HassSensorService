@@ -353,3 +353,4 @@ MigrationBackup/
 /HassSensorService/Properties/launchSettings.json
 /HassSensorService/appsettings.Development.json
 /SensorService.Docker.Build.cmd
+/HassSensorService/SensorService.Docker.Build.cmd
