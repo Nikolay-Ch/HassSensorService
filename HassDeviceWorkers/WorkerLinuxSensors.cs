@@ -4,6 +4,7 @@ using DeviceId.Formatters;
 using HassDeviceBaseWorkers;
 using HassMqttIntegration;
 using HassSensorConfiguration;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
@@ -30,7 +31,7 @@ namespace HassDeviceWorkers
     /// <summary>
     /// Send Unix-metrict to HomeAssistant
     /// </summary>
-    partial class WorkerLinuxSensors : DeviceBaseWorker<WorkerLinuxSensors>
+    public partial class WorkerLinuxSensors : DeviceBaseWorker<WorkerLinuxSensors>
     {
         public int SendTimeout { get; set; } = 30000;
 
@@ -47,8 +48,14 @@ namespace HassDeviceWorkers
         protected IEnumerable<ThermalZone> ThermalZones { get; set; } = GetOsTemperatureSensors();
         protected Device Device { get; init; }
 
-        public WorkerLinuxSensors(string deviceId, ILogger<WorkerLinuxSensors> logger, IOptions<WorkersConfiguration> workersConfiguration, IOptions<MqttConfiguration> mqttConfiguration, IMqttClientForMultipleSubscribers mqttClient)
-            : base(deviceId, logger, workersConfiguration, mqttConfiguration, mqttClient)
+        public WorkerLinuxSensors(
+            string deviceId,
+            IMemoryCache cache,
+            ILogger<WorkerLinuxSensors> logger,
+            IOptions<WorkersConfiguration> workersConfiguration,
+            IOptions<MqttConfiguration> mqttConfiguration,
+            IMqttClientForMultipleSubscribers mqttClient)
+            : base(cache, deviceId, logger, workersConfiguration, mqttConfiguration, mqttClient)
         {
             var macAddresses = NetworkInterface
                 .GetAllNetworkInterfaces()

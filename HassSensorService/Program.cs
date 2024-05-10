@@ -82,6 +82,8 @@ namespace HassSensorService
                 })
                 .ConfigureServices((hostContext, services) =>
                 {
+                    services.AddMemoryCache();
+
                     services.Configure<MqttConfiguration>(hostContext.Configuration.GetSection(nameof(MqttConfiguration)));
                     services.Configure<WorkersConfiguration>(hostContext.Configuration.GetSection(nameof(WorkersConfiguration)));
                     services.Configure<ModbusGatewayConfiguration>(hostContext.Configuration.GetSection(nameof(ModbusGatewayConfiguration)));

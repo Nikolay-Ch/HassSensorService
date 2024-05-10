@@ -6,13 +6,13 @@ using Microsoft.Extensions.Options;
 using MQTTnet.Client;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using BTHomePacketDecoder;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace HassDeviceWorkers
 {
@@ -24,8 +24,14 @@ namespace HassDeviceWorkers
     /// </summary>
     public class WorkerBTH01 : DeviceBaseWorker<WorkerBTH01>
     {
-        public WorkerBTH01(string deviceId, ILogger<WorkerBTH01> logger, IOptions<WorkersConfiguration> workersConfiguration, IOptions<MqttConfiguration> mqttConfiguration, IMqttClientForMultipleSubscribers mqttClient)
-            : base(deviceId, logger, workersConfiguration, mqttConfiguration, mqttClient)
+        public WorkerBTH01(
+            string deviceId,
+            IMemoryCache cache,
+            ILogger<WorkerBTH01> logger,
+            IOptions<WorkersConfiguration> workersConfiguration,
+            IOptions<MqttConfiguration> mqttConfiguration,
+            IMqttClientForMultipleSubscribers mqttClient)
+            : base(cache, deviceId, logger, workersConfiguration, mqttConfiguration, mqttClient)
         {
             var sensorFactory = new AnalogSensorFactory();
             var device = new Device
@@ -40,7 +46,7 @@ namespace HassDeviceWorkers
 
             ComponentList.AddRange(new List<IHassComponent>
             {
-                sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = DeviceClassDescription.Temperature, Device = device }),
+                sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = DeviceClassDescription.TemperatureCelsius, Device = device }),
                 sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = DeviceClassDescription.Humidity, Device = device }),
                 sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = DeviceClassDescription.Battery, Device = device }),
                 sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = DeviceClassDescription.Voltage, Device = device }),
@@ -99,24 +105,18 @@ namespace HassDeviceWorkers
 
                 var packet = new BTHomeV2Packet(serviceData);
 
-                // add values into dictionary to easy search by sensor-type
-                var vals = new Dictionary<IHassComponent, object>
-                {
-                    { ComponentList.First(e => e.DeviceClass == "temperature"), packet[BTHomeObjectId.Temperature] },
-                    { ComponentList.First(e => e.DeviceClass == "humidity"), packet[BTHomeObjectId.Humidity] },
-                    { ComponentList.First(e => e.DeviceClass == "battery"), packet[BTHomeObjectId.Battery] },
-                    { ComponentList.First(e => e.DeviceClass == "voltage"), packet[BTHomeObjectId.Voltage] }
-                };
-
-                // add values into json
-                foreach (var sensor in ComponentList)
-                    payloadObj.Add(sensor.DeviceClassDescription.ValueName, JsonSerializer.Serialize(vals[sensor]));
-
                 // delete serviceData key, to avoid re-processing of the message
                 payloadObj.Remove("servicedata");
 
+                var jsonPayload = CreatePayloadObject(payloadObj);
+                // add values into json (or ignore it if in cache and equals to cache)
+                jsonPayload.Add(GetValueName("tempc"), packet[BTHomeObjectId.Temperature]);
+                jsonPayload.Add(GetValueName("hum"), packet[BTHomeObjectId.Humidity]);
+                jsonPayload.Add(GetValueName("batt"), packet[BTHomeObjectId.Battery]);
+                jsonPayload.Add(GetValueName("volt"), packet[BTHomeObjectId.Voltage]);
+
                 // send message
-                await SendDeviceInformation(ComponentList[0], payloadObj);
+                await SendDeviceInformation(ComponentList[0], jsonPayload);
             }
             catch (Exception ex)
             {

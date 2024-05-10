@@ -2,6 +2,7 @@
 using HassDeviceWorkers.ModBus;
 using HassMqttIntegration;
 using HassSensorConfiguration;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
@@ -13,8 +14,15 @@ namespace HassDeviceWorkers
 {
     public class RsGzwsN01Worker : ModbusWorker<RsGzwsN01Worker>
     {
-        public RsGzwsN01Worker(string deviceId, ILoggerFactory loggerFactory, IOptions<WorkersConfiguration> workersConfiguration, IOptions<MqttConfiguration> mqttConfiguration, IOptions<ModbusGatewayConfiguration> modbusGatewayConfiguration, IMqttClientForMultipleSubscribers mqttClient)
-            : base(deviceId, loggerFactory, workersConfiguration, mqttConfiguration, modbusGatewayConfiguration, mqttClient)
+        public RsGzwsN01Worker(
+            string deviceId,
+            IMemoryCache cache,
+            ILoggerFactory loggerFactory,
+            IOptions<WorkersConfiguration> workersConfiguration,
+            IOptions<MqttConfiguration> mqttConfiguration,
+            IOptions<ModbusGatewayConfiguration> modbusGatewayConfiguration,
+            IMqttClientForMultipleSubscribers mqttClient)
+            : base(deviceId, cache, loggerFactory, workersConfiguration, mqttConfiguration, modbusGatewayConfiguration, mqttClient)
         {
             //ModbusGatewayConfiguration.SendTimeout = ModbusGatewayConfiguration < 60000
 

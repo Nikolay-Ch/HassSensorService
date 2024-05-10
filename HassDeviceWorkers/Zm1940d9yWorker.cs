@@ -2,6 +2,7 @@
 using HassDeviceWorkers.ModBus;
 using HassMqttIntegration;
 using HassSensorConfiguration;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
@@ -13,8 +14,15 @@ namespace HassDeviceWorkers
 {
     public class Zm1940d9yWorker : ModbusWorker<Sdm120mWorker>
     {
-        public Zm1940d9yWorker(string deviceId, ILoggerFactory loggerFactory, IOptions<WorkersConfiguration> workersConfiguration, IOptions<MqttConfiguration> mqttConfiguration, IOptions<ModbusGatewayConfiguration> modbusGatewayConfiguration, IMqttClientForMultipleSubscribers mqttClient)
-            : base(deviceId, loggerFactory, workersConfiguration, mqttConfiguration, modbusGatewayConfiguration, mqttClient)
+        public Zm1940d9yWorker(
+            string deviceId,
+            IMemoryCache cache,
+            ILoggerFactory loggerFactory,
+            IOptions<WorkersConfiguration> workersConfiguration,
+            IOptions<MqttConfiguration> mqttConfiguration,
+            IOptions<ModbusGatewayConfiguration> modbusGatewayConfiguration,
+            IMqttClientForMultipleSubscribers mqttClient)
+            : base(deviceId, cache, loggerFactory, workersConfiguration, mqttConfiguration, modbusGatewayConfiguration, mqttClient)
         {
             var sensorFactory = new AnalogSensorFactory();
             var device = new Device

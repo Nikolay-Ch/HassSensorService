@@ -1,6 +1,8 @@
+using BTHomePacketDecoder;
 using HassDeviceBaseWorkers;
 using HassMqttIntegration;
 using HassSensorConfiguration;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MQTTnet.Client;
@@ -22,8 +24,14 @@ namespace HassDeviceWorkers
     /// </summary>
     public class WorkerABN03 : DeviceBaseWorker<WorkerABN03>
     {
-        public WorkerABN03(string deviceId, ILogger<WorkerABN03> logger, IOptions<WorkersConfiguration> workersConfiguration, IOptions<MqttConfiguration> mqttConfiguration, IMqttClientForMultipleSubscribers mqttClient)
-            : base(deviceId, logger, workersConfiguration, mqttConfiguration, mqttClient)
+        public WorkerABN03(
+            string deviceId,
+            IMemoryCache cache,
+            ILogger<WorkerABN03> logger,
+            IOptions<WorkersConfiguration> workersConfiguration,
+            IOptions<MqttConfiguration> mqttConfiguration,
+            IMqttClientForMultipleSubscribers mqttClient)
+            : base(cache, deviceId, logger, workersConfiguration, mqttConfiguration, mqttClient)
         {
             var sensorFactory = new AnalogSensorFactory();
             var device = new Device
@@ -38,7 +46,7 @@ namespace HassDeviceWorkers
 
             ComponentList.AddRange(new List<IHassComponent>
             {
-                sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = DeviceClassDescription.Temperature, Device = device }),
+                sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = DeviceClassDescription.TemperatureCelsius, Device = device }),
                 sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = DeviceClassDescription.Humidity, Device = device }),
                 sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = DeviceClassDescription.IlluminanceLux, Device = device }),
                 sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = DeviceClassDescription.Battery, Device = device })
@@ -82,30 +90,24 @@ namespace HassDeviceWorkers
                 // convert hexadecimal string info byte-array
                 var payloadBytes = serviceData.FromHexStringToByteArray();
 
+                // delete serviceData key, to avoid re-processing of the message
+                payloadObj.Remove("servicedata");
+
                 // create parsed messages
                 var temp = payloadBytes.ParseShortLE(9, 8);
                 var humi = payloadBytes.ParseShortLE(11, 2);
                 var illu = payloadBytes.ParseTwoBytesLE(13);
                 var batt = payloadBytes[8];
 
-                // add values into dictionary to easy search by sensor-type
-                var vals = new Dictionary<IHassComponent, object>
-                {
-                    { ComponentList.First(e => e.DeviceClass == "temperature"), temp },
-                    { ComponentList.First(e => e.DeviceClass == "humidity"), humi },
-                    { ComponentList.First(e => e.DeviceClass == "illuminance"), illu },
-                    { ComponentList.First(e => e.DeviceClass == "battery"), batt }
-                };
-
-                // add values into json
-                foreach (var sensor in ComponentList)
-                    payloadObj.Add(sensor.DeviceClassDescription.ValueName, JsonSerializer.Serialize(vals[sensor]));
-
-                // delete serviceData key, to avoid re-processing of the message
-                payloadObj.Remove("servicedata");
+                var jsonPayload = CreatePayloadObject(payloadObj);
+                // add values into json (or ignore it if in cache and equals to cache)
+                jsonPayload.Add(GetValueName("tempc"), temp);
+                jsonPayload.Add(GetValueName("hum"), humi);
+                jsonPayload.Add(GetValueName("lux"), illu);
+                jsonPayload.Add(GetValueName("batt"), batt);
 
                 // send message
-                await SendDeviceInformation(ComponentList[0], payloadObj);
+                await SendDeviceInformation(ComponentList[0], jsonPayload);
             }
             catch (Exception ex)
             {
