@@ -2,12 +2,13 @@
 
 namespace HassSensorConfiguration
 {
-    public partial record class BinarySensor : IHassComponent
+    public record class BinarySensor : IHassComponent
     {
         public string GetConfigTopic() => $"homeassistant/binary_sensor/{UniqueId}/config";
 
         [JsonIgnore]
-        public required DeviceClassDescription DeviceClassDescription { get; init; }
+        public DeviceClassDescription DeviceClassDescription { get; init; }
+            = DeviceClassDescription.None; // need to remove required because Text.Json can't serialize required and JsonIgnore properties
 
         [JsonPropertyName("state_topic")]
         public required string StateTopic { get; init; }

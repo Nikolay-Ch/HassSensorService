@@ -85,7 +85,7 @@ namespace HassDeviceBaseWorkers
                         $"{MqttConfiguration.ConfigurationTopicBase}/" +
                         $"{component.GetType().GetHassComponentTypeString()}/" +
                         $"{component.UniqueId}/config",
-                        JsonSerializer.Serialize(component),
+                        JsonSerializer.Serialize((object)component), // need to convert to object because Text.Json does not support inheritance
                         MqttConfiguration.MqttQosLevel,
                         true);
 

@@ -3,17 +3,18 @@ using System.Text.Json.Serialization;
 
 namespace HassSensorConfiguration
 {
-    public partial record class AnalogSensor : IHassComponent
+    public record class AnalogSensor : IHassComponent
     {
         public string GetConfigTopic() => $"homeassistant/sensor/{UniqueId}/config";
 
         [JsonIgnore]
-        public required DeviceClassDescription DeviceClassDescription { get; init; }
+        public DeviceClassDescription DeviceClassDescription { get; init; }
+            = DeviceClassDescription.None; // need to remove required because Text.Json can't serialize required and JsonIgnore properties
 
         [DefaultValue(StateClass.None)]
         [JsonPropertyName("state_class")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-        public required StateClass StateClass { get; init; }
+        public StateClass StateClass { get; init; }
 
         [JsonPropertyName("state_topic")]
         public required string StateTopic { get; init; }
