@@ -92,7 +92,7 @@ namespace HassMqttIntegration
         }
 
         public async Task PublishAsync(string topic, string payload, MqttQualityOfServiceLevel mqttQosLevel) =>
-            await MqttClient.EnqueueAsync(topic, payload, mqttQosLevel);
+            await PublishAsync(topic, payload, mqttQosLevel, false);
 
         public async Task PublishAsync(string topic, string payload, MqttQualityOfServiceLevel mqttQosLevel, bool retain) =>
             await MqttClient.EnqueueAsync(topic, payload, mqttQosLevel, retain);
