@@ -15,35 +15,5 @@ Device Workers:
 
 All workers at the start send configuration message (that contains information about sensors in device), to create devices in the HomeAssistant.
 
-Service get configuration from json-config file or from command line.
-Minimum you need to setup this properties:
-* MqttUri
-* MqttUser
-* MqttUserPassword
-* TopicBase
-* AprilBeaconDevicesList
-
-Example of the config file:
-```json
-{
-  "MqttConfiguration": {
-    "MqttUri": "12.456.789.101",
-    "MqttUser": "mqtt_user",
-    "MqttUserPassword": "mqtt_password",
-    "MqttPort": 1883,
-    "MqttSecure": false,
-    "MqttQosLevel": "AtMostOnce",
-    "TopicBase": "home/OpenMQTTGateway/BTtoMQTT"
-  },
-  "ProgramConfiguration": {
-    "AprilBeaconDevicesList": [ "AABBCC112233", "DDEEFF445566" ]
-  },
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft": "Warning",
-      "Microsoft.Hosting.Lifetime": "Information"
-    }
-  }
-}
-```
+Service get configuration from json-config file, command line parameters or environment variables.
+For all configuration parameters see [configuraion file](HassSensorService/appsettings.json)
