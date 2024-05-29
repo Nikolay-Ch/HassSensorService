@@ -6,13 +6,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using NReco.Logging.File;
 using Syslog.Framework.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using NReco.Logging.File;
 
 [assembly: AssemblyVersion("1.0.*")]
 
@@ -98,12 +98,14 @@ namespace HassSensorService
                         .Configuration
                         .GetSection("Workers")
                         .GetChildren()
+                        .Where(e => e.GetChildren().First().Key != null)
                         .Select(workerConfig => new
                         {
-                            workerType = workerConfig.GetChildren().First().Key ?? "",
-                            deviceUniqueId = workerConfig.GetChildren().First().Value ?? ""
+                            workerType = workerConfig.Key ?? "",
+                            workerParams = workerConfig
+                                .GetChildren()
+                                .ToDictionary(e => e.Key, e => e.Value)
                         });
-
 
 #if DEBUG
                     var provider = (((ConfigurationRoot)hostContext.Configuration).Providers).Last();
@@ -111,6 +113,7 @@ namespace HassSensorService
                         if (provider.TryGet(key, out var value))
                             Console.WriteLine($"{key}={value}");
 #endif
+
                     if (!workers.Any())
                     {
                         Console.WriteLine("Warning! No workers found. Program do nothing...");
@@ -129,7 +132,7 @@ namespace HassSensorService
                             if (t != null)
                             {
                                 services.AddTransient(typeof(IHostedService),
-                                (serviceProvider) => ActivatorUtilities.CreateInstance(serviceProvider, t, worker.deviceUniqueId));
+                                (serviceProvider) => ActivatorUtilities.CreateInstance(serviceProvider, t, worker.workerParams));
 
                                 Console.WriteLine($"Worker: {worker.workerType} has been loaded...");
                             }

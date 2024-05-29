@@ -49,13 +49,13 @@ namespace HassDeviceWorkers
         protected Device Device { get; init; }
 
         public WorkerLinuxSensors(
-            string deviceId,
+            IReadOnlyDictionary<string, string> workerParameters,
             IMemoryCache cache,
             ILogger<WorkerLinuxSensors> logger,
             IOptions<WorkersConfiguration> workersConfiguration,
             IOptions<MqttConfiguration> mqttConfiguration,
             IMqttClientForMultipleSubscribers mqttClient)
-            : base(cache, deviceId, logger, workersConfiguration, mqttConfiguration, mqttClient)
+            : base(cache, workerParameters, logger, workersConfiguration, mqttConfiguration, mqttClient)
         {
             var macAddresses = NetworkInterface
                 .GetAllNetworkInterfaces()
@@ -149,7 +149,7 @@ namespace HassDeviceWorkers
                 var payload = CreatePayloadObject();
 
                 var procUtilizationSensor = ComponentList.Single(e => e.Name == "CPU_Load");
-                payload.Add(procUtilizationSensor.DeviceClassDescription.ValueName, procUtilization.ToString("N2"));
+                payload.CachedAdd(procUtilizationSensor.DeviceClassDescription.ValueName, procUtilization.ToString("N2"));
 
                 foreach (var (Name, Value) in osTemps)
                 {
@@ -157,11 +157,11 @@ namespace HassDeviceWorkers
                     var sensor = ComponentList.Single(e => e.UniqueId == $"{Environment.MachineName}-{Name}");
 
                     // add sensor value into payload
-                    payload.Add(sensor.DeviceClassDescription.ValueName, Value);
+                    payload.CachedAdd(sensor.DeviceClassDescription.ValueName, Value);
                 }
 
                 // send message
-                await SendDeviceInformation(ComponentList[0], payload);
+                await SendDeviceInformation(ComponentList[0].StateTopic, payload);
             }
             catch (Exception ex)
             {

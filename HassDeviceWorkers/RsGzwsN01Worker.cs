@@ -15,14 +15,14 @@ namespace HassDeviceWorkers
     public class RsGzwsN01Worker : ModbusWorker<RsGzwsN01Worker>
     {
         public RsGzwsN01Worker(
-            string deviceId,
+            IReadOnlyDictionary<string, string> workerParameters,
             IMemoryCache cache,
             ILoggerFactory loggerFactory,
             IOptions<WorkersConfiguration> workersConfiguration,
             IOptions<MqttConfiguration> mqttConfiguration,
             IOptions<ModbusGatewayConfiguration> modbusGatewayConfiguration,
             IMqttClientForMultipleSubscribers mqttClient)
-            : base(deviceId, cache, loggerFactory, workersConfiguration, mqttConfiguration, modbusGatewayConfiguration, mqttClient)
+            : base(cache, workerParameters, loggerFactory, workersConfiguration, mqttConfiguration, modbusGatewayConfiguration, mqttClient)
         {
             //ModbusGatewayConfiguration.SendTimeout = ModbusGatewayConfiguration < 60000
 
@@ -71,12 +71,12 @@ namespace HassDeviceWorkers
 
                 var zm194 = new RsGzwsN01(register.RawValue);
 
-                payload.Add(GetValueName("tempc"), zm194.Temperature);
-                payload.Add(GetValueName("hum"), zm194.Humidity);
-                payload.Add(GetValueName("lux"), zm194.LightIntensity);
+                payload.CachedAdd(GetValueName("tempc"), zm194.Temperature);
+                payload.CachedAdd(GetValueName("hum"), zm194.Humidity);
+                payload.CachedAdd(GetValueName("lux"), zm194.LightIntensity);
 
                 // send message
-                await SendDeviceInformation(ComponentList[0], payload);
+                await SendDeviceInformation(ComponentList[0].StateTopic, payload);
 
                 Logger.LogTrace("SendWorkerHeartBeat: Method ends... {type}", GetType().Name);
             }

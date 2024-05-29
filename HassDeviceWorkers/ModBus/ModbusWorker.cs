@@ -5,6 +5,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,14 +22,14 @@ namespace HassDeviceWorkers.ModBus
         protected ILoggerFactory LoggerFactory { get; }
 
         public ModbusWorker(
-            string deviceId,
             IMemoryCache cache,
+            IReadOnlyDictionary<string, string> workerParameters,
             ILoggerFactory loggerFactory,
             IOptions<WorkersConfiguration> workersConfiguration,
             IOptions<MqttConfiguration> mqttConfiguration,
             IOptions<ModbusGatewayConfiguration> modbusGatewayConfiguration,
             IMqttClientForMultipleSubscribers mqttClient) :
-            base(cache, deviceId, loggerFactory.CreateLogger<T>(), workersConfiguration, mqttConfiguration, mqttClient)
+            base(cache, workerParameters, loggerFactory.CreateLogger<T>(), workersConfiguration, mqttConfiguration, mqttClient)
         {
             LoggerFactory = loggerFactory;
             LoggerFactory.CreateLogger<ModbusWorker<T>>();

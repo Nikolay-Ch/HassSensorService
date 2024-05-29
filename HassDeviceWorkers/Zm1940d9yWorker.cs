@@ -15,14 +15,14 @@ namespace HassDeviceWorkers
     public class Zm1940d9yWorker : ModbusWorker<Sdm120mWorker>
     {
         public Zm1940d9yWorker(
-            string deviceId,
+            IReadOnlyDictionary<string, string> workerParameters,
             IMemoryCache cache,
             ILoggerFactory loggerFactory,
             IOptions<WorkersConfiguration> workersConfiguration,
             IOptions<MqttConfiguration> mqttConfiguration,
             IOptions<ModbusGatewayConfiguration> modbusGatewayConfiguration,
             IMqttClientForMultipleSubscribers mqttClient)
-            : base(deviceId, cache, loggerFactory, workersConfiguration, mqttConfiguration, modbusGatewayConfiguration, mqttClient)
+            : base(cache, workerParameters, loggerFactory, workersConfiguration, mqttConfiguration, modbusGatewayConfiguration, mqttClient)
         {
             var sensorFactory = new AnalogSensorFactory();
             var device = new Device
@@ -70,17 +70,17 @@ namespace HassDeviceWorkers
 
                 var zm194 = new Zm1940d9y(register.RawValue);
 
-                payload.Add(GetValueName("ph1_volt"), zm194.Phase1Voltage);
-                payload.Add(GetValueName("ph2_volt"), zm194.Phase2Voltage);
-                payload.Add(GetValueName("ph3_volt"), zm194.Phase3Voltage);
-                payload.Add(GetValueName("ln12_volt"), zm194.Line1To2Voltage);
-                payload.Add(GetValueName("ln23_volt"), zm194.Line2To3Voltage);
-                payload.Add(GetValueName("ln31_volt"), zm194.Line3To1Voltage);
-                payload.Add(GetValueName("freqh"), zm194.Frequency);
-                payload.Add(GetValueName("unb_volt"), zm194.VoltageUnbalance);
+                payload.CachedAdd(GetValueName("ph1_volt"), zm194.Phase1Voltage);
+                payload.CachedAdd(GetValueName("ph2_volt"), zm194.Phase2Voltage);
+                payload.CachedAdd(GetValueName("ph3_volt"), zm194.Phase3Voltage);
+                payload.CachedAdd(GetValueName("ln12_volt"), zm194.Line1To2Voltage);
+                payload.CachedAdd(GetValueName("ln23_volt"), zm194.Line2To3Voltage);
+                payload.CachedAdd(GetValueName("ln31_volt"), zm194.Line3To1Voltage);
+                payload.CachedAdd(GetValueName("freqh"), zm194.Frequency);
+                payload.CachedAdd(GetValueName("unb_volt"), zm194.VoltageUnbalance);
 
                 // send message
-                await SendDeviceInformation(ComponentList[0], payload);
+                await SendDeviceInformation(ComponentList[0].StateTopic, payload);
             }
             catch (Exception ex)
             {

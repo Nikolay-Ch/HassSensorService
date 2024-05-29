@@ -15,46 +15,10 @@ using System.Threading.Tasks;
 
 namespace HassDeviceBaseWorkers
 {
-    /// <summary>
-    /// Use cache to skip equal values in MQTT messages
-    /// </summary>
-    /// <param name="deviceId"></param>
-    /// <param name="cache"></param>
-    /// <param name="payload"></param>
-    /// <param name="logger"></param>
-    public class JsonPayload(string deviceId, IMemoryCache cache, JsonObject payload, ILogger logger)
-    {
-        protected string DeviceId { get; } = deviceId;
-        protected JsonObject Payload { get; } = payload;
-        protected IMemoryCache Cache { get; } = cache;
-        protected ILogger Logger { get; } = logger;
-
-        public void Add(string propertyName, object value)
-        {
-            var key = $"{DeviceId}-{propertyName}";
-
-            if (Cache.TryGetValue(key, out var cachedValue) && (cachedValue?.Equals(value) ?? false) )
-            {
-                Logger.LogTrace("Value '{Property}' in the cache and is equals to stored in cache '{Value}' - do not inserting into JSON.",
-                    propertyName, value);
-
-                return;
-            }
-
-            Cache.Set(key, value, TimeSpan.FromMinutes(30));
-            Payload.Add(propertyName, JsonValue.Create(value));
-        }
-
-        public override string ToString()
-        {
-            return Payload.ToString();
-        }
-    }
-
-
     public class DeviceBaseWorker<T>(
         IMemoryCache cache,
-        string deviceId, ILogger<T> logger, IOptions<WorkersConfiguration> workersConfiguration,
+        IReadOnlyDictionary<string, string> workerParameters,
+        ILogger<T> logger, IOptions<WorkersConfiguration> workersConfiguration,
         IOptions<MqttConfiguration> mqttConfiguration,
         IMqttClientForMultipleSubscribers mqttClient) : BackgroundService, IMqttSubscriber
     {
@@ -67,7 +31,7 @@ namespace HassDeviceBaseWorkers
         // service tasks, that we start to work
         protected List<Task> WorkingTasks { get; set; } = [];
 
-        protected virtual string DeviceId { get; } = deviceId;
+        protected virtual string DeviceId { get; } = workerParameters.ContainsKey("DeviceId") ? workerParameters["DeviceId"] : "";
 
         protected List<IHassComponent> ComponentList { get; } = [];
 
@@ -148,10 +112,10 @@ namespace HassDeviceBaseWorkers
                                             .DeviceClassDescription
                                             .ValueName;
 
-        protected virtual JsonPayload CreatePayloadObject(JsonObject? payload = null) =>
+        protected virtual JsonCachedPayload CreatePayloadObject(JsonObject? payload = null) =>
             new(DeviceId, Cache, payload ?? new JsonObject() { { "Id", DeviceId }, { "name", $"{DeviceId}" } }, Logger);
 
-        protected virtual async Task SendDeviceInformation(IHassComponent component, JsonPayload payload)
+        protected virtual async Task SendDeviceInformation(string topic, JsonCachedPayload payload)
         {
             try
             {
@@ -160,14 +124,12 @@ namespace HassDeviceBaseWorkers
 
                 // send message
                 await MqttClient.PublishAsync(
-                    component
-                        .StateTopic
-                        .Replace("+/+", $"{MqttConfiguration.MqttHomeAssistantHomeTopic}/{WorkersConfiguration.ServiceName}"),
+                    topic.Replace("+/+", $"{MqttConfiguration.MqttHomeAssistantHomeTopic}/{WorkersConfiguration.ServiceName}"),
                     payload.ToString(),
                     MqttConfiguration.MqttQosLevel);
 
-                Logger.LogInformation("{type} send information message: {payload} at {time}",
-                    typeof(T).Name, payload, DateTimeOffset.Now);
+                Logger.LogInformation("{type} send information message: {topic} - {payload} at {time}",
+                    typeof(T).Name, topic, payload, DateTimeOffset.Now);
 
                 Logger.LogTrace("SendDeviceInformation: Method ends... {type}", typeof(T).Name);
             }

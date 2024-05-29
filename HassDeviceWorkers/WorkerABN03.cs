@@ -1,4 +1,3 @@
-using BTHomePacketDecoder;
 using HassDeviceBaseWorkers;
 using HassMqttIntegration;
 using HassSensorConfiguration;
@@ -8,7 +7,6 @@ using Microsoft.Extensions.Options;
 using MQTTnet.Client;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -25,13 +23,13 @@ namespace HassDeviceWorkers
     public class WorkerABN03 : DeviceBaseWorker<WorkerABN03>
     {
         public WorkerABN03(
-            string deviceId,
+            IReadOnlyDictionary<string, string> workerParameters,
             IMemoryCache cache,
             ILogger<WorkerABN03> logger,
             IOptions<WorkersConfiguration> workersConfiguration,
             IOptions<MqttConfiguration> mqttConfiguration,
             IMqttClientForMultipleSubscribers mqttClient)
-            : base(cache, deviceId, logger, workersConfiguration, mqttConfiguration, mqttClient)
+            : base(cache, workerParameters, logger, workersConfiguration, mqttConfiguration, mqttClient)
         {
             var sensorFactory = new AnalogSensorFactory();
             var device = new Device
@@ -101,13 +99,13 @@ namespace HassDeviceWorkers
 
                 var jsonPayload = CreatePayloadObject(payloadObj);
                 // add values into json (or ignore it if in cache and equals to cache)
-                jsonPayload.Add(GetValueName("tempc"), temp);
-                jsonPayload.Add(GetValueName("hum"), humi);
-                jsonPayload.Add(GetValueName("lux"), illu);
-                jsonPayload.Add(GetValueName("batt"), batt);
+                jsonPayload.CachedAdd(GetValueName("tempc"), temp);
+                jsonPayload.CachedAdd(GetValueName("hum"), humi);
+                jsonPayload.CachedAdd(GetValueName("lux"), illu);
+                jsonPayload.CachedAdd(GetValueName("batt"), batt);
 
                 // send message
-                await SendDeviceInformation(ComponentList[0], jsonPayload);
+                await SendDeviceInformation(ComponentList[0].StateTopic, jsonPayload);
             }
             catch (Exception ex)
             {

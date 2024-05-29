@@ -1,18 +1,18 @@
+using BTHomePacketDecoder;
 using HassDeviceBaseWorkers;
 using HassMqttIntegration;
 using HassSensorConfiguration;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MQTTnet.Client;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Text.Json.Nodes;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using BTHomePacketDecoder;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace HassDeviceWorkers
 {
@@ -25,13 +25,13 @@ namespace HassDeviceWorkers
     public class WorkerBTH01 : DeviceBaseWorker<WorkerBTH01>
     {
         public WorkerBTH01(
-            string deviceId,
+            IReadOnlyDictionary<string, string> workerParameters,
             IMemoryCache cache,
             ILogger<WorkerBTH01> logger,
             IOptions<WorkersConfiguration> workersConfiguration,
             IOptions<MqttConfiguration> mqttConfiguration,
             IMqttClientForMultipleSubscribers mqttClient)
-            : base(cache, deviceId, logger, workersConfiguration, mqttConfiguration, mqttClient)
+            : base(cache, workerParameters, logger, workersConfiguration, mqttConfiguration, mqttClient)
         {
             var sensorFactory = new AnalogSensorFactory();
             var device = new Device
@@ -110,13 +110,13 @@ namespace HassDeviceWorkers
 
                 var jsonPayload = CreatePayloadObject(payloadObj);
                 // add values into json (or ignore it if in cache and equals to cache)
-                jsonPayload.Add(GetValueName("tempc"), packet[BTHomeObjectId.Temperature]);
-                jsonPayload.Add(GetValueName("hum"), packet[BTHomeObjectId.Humidity]);
-                jsonPayload.Add(GetValueName("batt"), packet[BTHomeObjectId.Battery]);
-                jsonPayload.Add(GetValueName("volt"), packet[BTHomeObjectId.Voltage]);
+                jsonPayload.CachedAdd(GetValueName("tempc"), packet[BTHomeObjectId.Temperature]);
+                jsonPayload.CachedAdd(GetValueName("hum"), packet[BTHomeObjectId.Humidity]);
+                jsonPayload.CachedAdd(GetValueName("batt"), packet[BTHomeObjectId.Battery]);
+                jsonPayload.CachedAdd(GetValueName("volt"), packet[BTHomeObjectId.Voltage]);
 
                 // send message
-                await SendDeviceInformation(ComponentList[0], jsonPayload);
+                await SendDeviceInformation(ComponentList[0].StateTopic, jsonPayload);
             }
             catch (Exception ex)
             {

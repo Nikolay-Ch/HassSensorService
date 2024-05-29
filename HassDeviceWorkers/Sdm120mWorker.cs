@@ -15,14 +15,14 @@ namespace HassDeviceWorkers
     public class Sdm120mWorker : ModbusWorker<Sdm120mWorker>
     {
         public Sdm120mWorker(
-            string deviceId,
+            IReadOnlyDictionary<string, string> workerParameters,
             IMemoryCache cache,
             ILoggerFactory loggerFactory,
             IOptions<WorkersConfiguration> workersConfiguration,
             IOptions<MqttConfiguration> mqttConfiguration,
             IOptions<ModbusGatewayConfiguration> modbusGatewayConfiguration,
             IMqttClientForMultipleSubscribers mqttClient)
-            : base(deviceId, cache, loggerFactory, workersConfiguration, mqttConfiguration, modbusGatewayConfiguration, mqttClient)
+            : base(cache, workerParameters, loggerFactory, workersConfiguration, mqttConfiguration, modbusGatewayConfiguration, mqttClient)
         {
             var sensorFactory = new AnalogSensorFactory();
             var device = new Device
@@ -69,17 +69,17 @@ namespace HassDeviceWorkers
 
                 var sdm120 = new Sdm120(bytesReaded);
 
-                payload.Add(GetValueName("volt"), sdm120.Voltage);
-                payload.Add(GetValueName("amps"), sdm120.Current);
-                payload.Add(GetValueName("watt"), sdm120.ActivePower);
-                payload.Add(GetValueName("var"), sdm120.ReactivePower);
-                payload.Add(GetValueName("va"), sdm120.ApparentPower);
-                payload.Add(GetValueName("pfact"), sdm120.PowerFactor);
-                payload.Add(GetValueName("freqh"), sdm120.Frequency);
-                payload.Add(GetValueName("ekwh"), sdm120.TotalActiveEnergy);
+                payload.CachedAdd(GetValueName("volt"), sdm120.Voltage);
+                payload.CachedAdd(GetValueName("amps"), sdm120.Current);
+                payload.CachedAdd(GetValueName("watt"), sdm120.ActivePower);
+                payload.CachedAdd(GetValueName("var"), sdm120.ReactivePower);
+                payload.CachedAdd(GetValueName("va"), sdm120.ApparentPower);
+                payload.CachedAdd(GetValueName("pfact"), sdm120.PowerFactor);
+                payload.CachedAdd(GetValueName("freqh"), sdm120.Frequency);
+                payload.CachedAdd(GetValueName("ekwh"), sdm120.TotalActiveEnergy);
 
                 // send message
-                await SendDeviceInformation(ComponentList[0], payload);
+                await SendDeviceInformation(ComponentList[0].StateTopic, payload);
             }
             catch (Exception ex)
             {
