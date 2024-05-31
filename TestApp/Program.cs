@@ -24,7 +24,7 @@ namespace TestApp
                     DeviceClassDescription = new DeviceClassDescription()
                 });
 
-            var topic = sensor.GetConfigTopic();
+            var topic = sensor.StateTopic;
             var sensorInfo = JsonSerializer.Serialize(sensor);
 
             Console.WriteLine(topic);
