@@ -94,7 +94,7 @@ namespace HassSensorService
                     services.AddSingleton(typeof(IMqttClientForMultipleSubscribers), typeof(MqttClientForMultipleSubscribers));
 
                     // get all workers
-                    var workers = hostContext
+                    /*var workers = hostContext
                         .Configuration
                         .GetSection("Workers")
                         .GetChildren()
@@ -105,10 +105,17 @@ namespace HassSensorService
                             workerParams = workerConfig
                                 .GetChildren()
                                 .ToDictionary(e => e.Key, e => e.Value)
-                        });
+                        });*/
+
+                    var workers = hostContext
+                        .Configuration
+                        .GetSection("Workers")
+                        .GetChildren()
+                        .Select(e => e.GetChildren()
+                        .ToDictionary(e => e.Key, e => e.Value));
 
 #if DEBUG
-                    var provider = (((ConfigurationRoot)hostContext.Configuration).Providers).Last();
+                    var provider = ((ConfigurationRoot)hostContext.Configuration).Providers.Last();
                     foreach (var key in provider.GetFullKeyNames(null, []).OrderBy(p => p))
                         if (provider.TryGet(key, out var value))
                             Console.WriteLine($"{key}={value}");
@@ -123,25 +130,28 @@ namespace HassSensorService
                     // add each worker as a service and pass deviceId parameter to it
                     foreach (var worker in workers)
                     {
+                        var workerType = worker["type"];
+                        if (workerType == null)
+                            continue;
+
                         try
                         {
-                            var t = Type.GetType($"{worker.workerType}, HassDeviceWorkers", true);
-
-                            loadedWorkers.Add(worker.workerType);
+                            var t = Type.GetType($"{workerType}, HassDeviceWorkers", true);
 
                             if (t != null)
                             {
+                                loadedWorkers.Add(workerType!);
                                 services.AddTransient(typeof(IHostedService),
-                                (serviceProvider) => ActivatorUtilities.CreateInstance(serviceProvider, t, worker.workerParams));
+                                (serviceProvider) => ActivatorUtilities.CreateInstance(serviceProvider, t, worker));
 
-                                Console.WriteLine($"Worker: {worker.workerType} has been loaded...");
+                                Console.WriteLine($"Worker: {workerType} has been loaded...");
                             }
                             else
-                                Console.WriteLine($"Error loading worker from configuration. {worker.workerType}");
+                                Console.WriteLine($"Error loading worker from configuration. {workerType}");
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine($"Error loading worker {worker.workerType} from configuration. {ex.Message}");
+                            Console.WriteLine($"Error loading worker {workerType} from configuration. {ex.Message}");
                         }
                     }
                 });
