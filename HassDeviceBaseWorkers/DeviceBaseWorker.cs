@@ -95,8 +95,11 @@ namespace HassDeviceBaseWorkers
                         $"{component.UniqueId}/config",
                         JsonSerializer.Serialize((object)component), // need to convert to object because Text.Json does not support inheritance
                         MqttConfiguration.MqttQosLevel,
+#if DEBUG
+                        false);
+#else
                         true);
-
+#endif
                     Logger.LogInformation("{type} send configuration for component {component} at: {time}",
                         typeof(T).Name, component.UniqueId, DateTimeOffset.Now);
                 }
