@@ -1,11 +1,28 @@
-﻿namespace HassSensorConfiguration
+﻿using System.Collections.Generic;
+
+namespace HassSensorConfiguration
 {
     public record class DeviceClassDescription
     {
-        public string DeviceClass { get; init; } = ""; // name of device class. This property has null-value for non-standard device-classes
-        public string ValueName { get; init; } = ""; // name of property, contained value in value-MQTT message
-        public string UnitOfMeasures { get; init; } = ""; // contains unit of measures in human-friendly text
-        public IHassComponentFactory? ComponentFactory { get; init; } = null; // reference to factory, that creating this type of sensor
+        /// <summary>
+        /// Name of device class. This property has null-value for non-standard device-classes
+        /// </summary>
+        public string? DeviceClass { get; init; } = null;
+
+        /// <summary>
+        /// Name of property, contained value in value-MQTT message
+        /// </summary>
+        public string ValueName { get; init; } = "";
+
+        /// <summary>
+        /// The sensor's unit of measurement can be overridden for sensors with device class pressure or temperature.
+        /// </summary>
+        public string? UnitOfMeasures { get; init; } = null;
+
+        /// <summary>
+        /// Reference to factory, that creating this type of sensor
+        /// </summary>
+        public IHassComponentFactory? ComponentFactory { get; init; } = null;
 
         public DeviceClassDescription() { }
 
@@ -20,7 +37,10 @@
         public static AnalogSensorFactory AnalogSensorFactory { get; } = new();
         public static BinarySensorFactory BinarySensorFactory { get; } = new();
 
+        #region None Sensors
         public static DeviceClassDescription None => new() { ValueName = "state" };
+        public static DeviceClassDescription NoneWithName(string valueName) => new() { ValueName = valueName };
+        #endregion
 
         #region AnalogSensor
         public static DeviceClassDescription ApparentPower => new()
@@ -97,6 +117,8 @@
         { DeviceClass = "temperature", ValueName = "temp", UnitOfMeasures = "°C", ComponentFactory = AnalogSensorFactory };
         public static DeviceClassDescription TemperatureCelsius => new()
         { DeviceClass = "temperature", ValueName = "tempc", UnitOfMeasures = "°C", ComponentFactory = AnalogSensorFactory };
+        public static DeviceClassDescription TemperatureCelsiusWithName(string valueName) => new()
+        { DeviceClass = "temperature", ValueName = valueName, UnitOfMeasures = "°C", ComponentFactory = AnalogSensorFactory };
         public static DeviceClassDescription Timestamp => new()
         { DeviceClass = "timestamp", ValueName = "ts", ComponentFactory = AnalogSensorFactory };
         public static DeviceClassDescription VolatileOrganicCompounds => new()
@@ -134,5 +156,38 @@
         public static DeviceClassDescription Vibration => new() { DeviceClass = "vibration", ValueName = "state", ComponentFactory = BinarySensorFactory };
         public static DeviceClassDescription Window => new() { DeviceClass = "window", ValueName = "state", ComponentFactory = BinarySensorFactory };
         #endregion
+
+        #region Enum sensors
+        public static DeviceClassDescription EnumSensor(string valueName) => new()
+        { DeviceClass = "enum", ComponentFactory = AnalogSensorFactory, ValueName = valueName };
+        #endregion
+    }
+
+    public static class AnalogSensorFactoryExtensions
+    {
+        public static IHassComponent CreateEnumComponent(
+            this AnalogSensorFactory sensorFactory,
+            Device device,
+            string name,
+            List<string> options,
+            string? icon = null) =>
+                sensorFactory.CreateComponent(
+                    new AnalogSensorDescription
+                    {
+                        StateClass = StateClass.None,
+                        DeviceClassDescription = DeviceClassDescription.EnumSensor(name),
+                        SensorName = name,
+                        Device = device,
+                        Options = options,
+                        SensorIcon = icon
+                    });
+    }
+
+    public static class DeviceClassDescriptionExtensions
+    {
+        //public static IHassComponent CreateEnumComponentFromDescription(
+            //this DeviceClassDescription description,
+            //IEnumerable<string> options) =>
+            //new() { }
     }
 }
