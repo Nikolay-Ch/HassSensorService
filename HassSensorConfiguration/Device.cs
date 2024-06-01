@@ -13,7 +13,7 @@ namespace HassSensorConfiguration
 
         [JsonPropertyName("manufacturer")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public string Manufacturer { get; init; } = "";
+        public string? Manufacturer { get; init; }
 
         [JsonPropertyName("model")]
         public required string Model { get; init; }
@@ -31,6 +31,6 @@ namespace HassSensorConfiguration
 
         [JsonPropertyName("via_device")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public required string ViaDevice { get; init; }
+        public required string? ViaDevice { get; init; }
     }
 }
