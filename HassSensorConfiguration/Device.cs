@@ -21,9 +21,13 @@ namespace HassSensorConfiguration
         [JsonPropertyName("name")]
         public required string Name { get; init; }
 
+        [JsonPropertyName("serial_number")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? SerialNumber { get; set; }
+
         [JsonPropertyName("sw_version")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public string SoftwareVersion { get; init; } = "";
+        public string? SoftwareVersion { get; init; }
 
         [JsonPropertyName("via_device")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
