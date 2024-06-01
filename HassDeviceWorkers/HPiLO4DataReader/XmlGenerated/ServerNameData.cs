@@ -7,12 +7,16 @@ namespace HassDeviceWorkers.HPiLO4DataReader.XmlGenerated
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
     [System.Xml.Serialization.XmlRootAttribute(ElementName = "RIBCL", Namespace = "", IsNullable = false)]
-    public partial class ServerHostData
+    public partial class ServerNameData
     {
 
         private RIBCLRESPONSE rESPONSEField;
 
-        private RIBCLSMBIOS_RECORD[] gET_HOST_DATAField;
+        private RIBCLSERVER_NAME sERVER_NAMEField;
+
+        private RIBCLSERVER_OSNAME sERVER_OSNAMEField;
+
+        private RIBCLSERVER_OSVERSION sERVER_OSVERSIONField;
 
         private decimal vERSIONField;
 
@@ -30,16 +34,41 @@ namespace HassDeviceWorkers.HPiLO4DataReader.XmlGenerated
         }
 
         /// <remarks/>
-        [System.Xml.Serialization.XmlArrayItemAttribute("SMBIOS_RECORD", IsNullable = false)]
-        public RIBCLSMBIOS_RECORD[] GET_HOST_DATA
+        public RIBCLSERVER_NAME SERVER_NAME
         {
             get
             {
-                return this.gET_HOST_DATAField;
+                return this.sERVER_NAMEField;
             }
             set
             {
-                this.gET_HOST_DATAField = value;
+                this.sERVER_NAMEField = value;
+            }
+        }
+
+        /// <remarks/>
+        public RIBCLSERVER_OSNAME SERVER_OSNAME
+        {
+            get
+            {
+                return this.sERVER_OSNAMEField;
+            }
+            set
+            {
+                this.sERVER_OSNAMEField = value;
+            }
+        }
+
+        /// <remarks/>
+        public RIBCLSERVER_OSVERSION SERVER_OSVERSION
+        {
+            get
+            {
+                return this.sERVER_OSVERSIONField;
+            }
+            set
+            {
+                this.sERVER_OSVERSIONField = value;
             }
         }
 
@@ -62,54 +91,22 @@ namespace HassDeviceWorkers.HPiLO4DataReader.XmlGenerated
     [System.SerializableAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-    public partial class RIBCLSMBIOS_RECORD
+    public partial class RIBCLSERVER_NAME
     {
 
-        private RIBCLSMBIOS_RECORDFIELD[] fIELDField;
-
-        private byte tYPEField;
-
-        private string b64_DATAField;
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("FIELD")]
-        public RIBCLSMBIOS_RECORDFIELD[] FIELD
-        {
-            get
-            {
-                return this.fIELDField;
-            }
-            set
-            {
-                this.fIELDField = value;
-            }
-        }
+        private string vALUEField;
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public byte TYPE
+        public string VALUE
         {
             get
             {
-                return this.tYPEField;
+                return this.vALUEField;
             }
             set
             {
-                this.tYPEField = value;
-            }
-        }
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string B64_DATA
-        {
-            get
-            {
-                return this.b64_DATAField;
-            }
-            set
-            {
-                this.b64_DATAField = value;
+                this.vALUEField = value;
             }
         }
     }
@@ -118,26 +115,34 @@ namespace HassDeviceWorkers.HPiLO4DataReader.XmlGenerated
     [System.SerializableAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-    public partial class RIBCLSMBIOS_RECORDFIELD
+    public partial class RIBCLSERVER_OSNAME
     {
-
-        private string nAMEField;
 
         private string vALUEField;
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string NAME
+        public string VALUE
         {
             get
             {
-                return this.nAMEField;
+                return this.vALUEField;
             }
             set
             {
-                this.nAMEField = value;
+                this.vALUEField = value;
             }
         }
+    }
+
+    /// <remarks/>
+    [System.SerializableAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
+    public partial class RIBCLSERVER_OSVERSION
+    {
+
+        private string vALUEField;
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]

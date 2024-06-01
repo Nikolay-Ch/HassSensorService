@@ -67,16 +67,18 @@ namespace HassDeviceWorkers.HPiLO4DataReader
 
         async public Task<HostData> GetHostData()
         {
-            var result = await InnerGetData("<GET_HOST_DATA/>");
+            var result = await InnerGetData("<GET_HOST_DATA/><GET_SERVER_NAME/>");
 
             // skip service empty statuses...
             var doc = result
                 .Split("<?xml version=\"1.0\"?>")
                 .Skip(5)
-                .First();
+                .Take(2)
+                .ToList();
 
-            var serverHostData = DeserializeXml<ServerHostData>(doc);
-            return new(serverHostData);
+            var serverHostData = DeserializeXml<ServerHostData>(doc[0]);
+            var serverNameData = DeserializeXml<ServerNameData>(doc[1]);
+            return new(serverNameData, serverHostData);
         }
 
         async public Task<HealthData> GetHealthAndUptime()

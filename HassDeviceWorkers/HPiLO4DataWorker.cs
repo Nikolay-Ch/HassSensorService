@@ -9,7 +9,6 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -46,8 +45,11 @@ namespace HassDeviceWorkers
             var sensorFactory = new AnalogSensorFactory();
             var device = new Device()
             {
-                Name = "HP iLO",
+                Name = $"HP iLO ({hostData.ServerName})",
                 Manufacturer = "Hewlett Packard",
+                SerialNumber = hostData.SerialNumber,
+                SoftwareVersion = hostData.ServerOsName != null || hostData.ServerOsVersion != null ?
+                    $"{hostData.ServerOsName}. ver:{hostData.ServerOsVersion}" : null,
                 Model = hostData.ProductName ?? "",
                 ViaDevice = WorkersConfiguration.ServiceName,
                 Identifiers = [hostData.SerialNumber ?? throw new NullReferenceException("HP server serial number is null!")],
