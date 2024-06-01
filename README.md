@@ -10,6 +10,7 @@ Device Workers:
 * **Zm1940d9yWorker** - Worker for Modbus 3-phase energy meter ZM194-D9Y.
 * **WorkerABN03** - AprilBeacon Bluetooth Low Enegry devices integration service. Support hardware: [ABN03](https://wiki.aprbrother.com/en/ABSensor.html#absensor-n03)
 * **WorkerBTH01** - BLE Tuya [BTH01](https://pvvx.github.io/BTH01/) device with custom [PVVX](https://github.com/pvvx/THB2?tab=readme-ov-file) firmware	Support.
+* **HPiLO4DataWorker** - Hewlett Packard iLO Health sensors... Set URL, User and Password in configuration file and health iLO sensors of your server will appear in the Home Assistant
 
 **WorkerBTH01**, **WorkerABN03** uses MQTT-advertising packets from [OpenMqttGateway](https://github.com/1technophile/OpenMQTTGateway). They listen target MQTT-topic, read raw-messages from devices then parse it and at last send message into MQTT-topic.
 
