@@ -60,16 +60,17 @@ namespace HassDeviceWorkers
 
             DeviceId = hostData.SerialNumber;
 
+            List<string> healthStatuses = [..Enum.GetNames(typeof(HealthStatus))];
             ComponentList.AddRange(
             [
-                sensorFactory.CreateEnumComponent(device, "HealthBiosHardware", ["Undefined", "OK", "Warning", "Critical"], "mdi:list-status"),
-                sensorFactory.CreateEnumComponent(device, "HealthFans", ["Undefined", "OK", "Warning", "Critical"], "mdi:list-status"),
-                sensorFactory.CreateEnumComponent(device, "HealthTemperature", ["Undefined", "OK", "Warning", "Critical"], "mdi:list-status"),
-                sensorFactory.CreateEnumComponent(device, "HealthPowerSupplies", ["Undefined", "OK", "Warning", "Critical"], "mdi:list-status"),
-                sensorFactory.CreateEnumComponent(device, "HealthProcessor", ["Undefined", "OK", "Warning", "Critical"], "mdi:list-status"),
-                sensorFactory.CreateEnumComponent(device, "HealthMemory", ["Undefined", "OK", "Warning", "Critical"], "mdi:list-status"),
-                sensorFactory.CreateEnumComponent(device, "HealthNetwork", ["Undefined", "OK", "Warning", "Critical"], "mdi:list-status"),
-                sensorFactory.CreateEnumComponent(device, "HealthStorage", ["Undefined", "OK", "Warning", "Critical"], "mdi:list-status"),
+                sensorFactory.CreateEnumComponent(device, "HealthBiosHardware", healthStatuses, "mdi:list-status"),
+                sensorFactory.CreateEnumComponent(device, "HealthFans", healthStatuses, "mdi:list-status"),
+                sensorFactory.CreateEnumComponent(device, "HealthTemperature", healthStatuses, "mdi:list-status"),
+                sensorFactory.CreateEnumComponent(device, "HealthPowerSupplies", healthStatuses, "mdi:list-status"),
+                sensorFactory.CreateEnumComponent(device, "HealthProcessor", healthStatuses, "mdi:list-status"),
+                sensorFactory.CreateEnumComponent(device, "HealthMemory", healthStatuses, "mdi:list-status"),
+                sensorFactory.CreateEnumComponent(device, "HealthNetwork", healthStatuses, "mdi:list-status"),
+                sensorFactory.CreateEnumComponent(device, "HealthStorage", healthStatuses, "mdi:list-status"),
             ]);
 
             foreach (var temperature in healthData.Temperatures)
@@ -90,7 +91,7 @@ namespace HassDeviceWorkers
             foreach (var powerSupply in healthData.PowerSupplies)
             {
                 // power supply sensor
-                var powerSupplyTemp = sensorFactory.CreateComponent(
+                var sensorPowerSupply = sensorFactory.CreateComponent(
                     new AnalogSensorDescription
                     {
                         StateClass = StateClass.None,
@@ -100,7 +101,7 @@ namespace HassDeviceWorkers
                         SensorName = powerSupply.Label
                     });
 
-                ComponentList.Add(powerSupplyTemp);
+                ComponentList.Add(sensorPowerSupply);
             }
 
             foreach (var fan in healthData.Fans)
@@ -267,6 +268,6 @@ namespace HassDeviceWorkers
         private static partial Regex IdRegex();
 
         private static string ClearSensorName(string sensorName, string sensorPostfix) =>
-            $"_{sensorName.Replace(" ", "").Replace("-", "")}_{sensorPostfix}";
+            $"sensor_{sensorName.Replace(" ", "").Replace("-", "")}_{sensorPostfix}";
     }
 }

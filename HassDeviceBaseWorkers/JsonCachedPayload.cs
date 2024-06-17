@@ -28,7 +28,7 @@ namespace HassDeviceBaseWorkers
 
             if (Cache.TryGetValue(key, out var cachedValue) && (cachedValue?.Equals(value) ?? false) )
             {
-                Logger.LogTrace("Value '{Property}' in the cache and is equals to stored in cache '{Value}' - do not inserting into JSON.",
+                Logger.LogTrace("Value '{Property}' in the cache and is equals to stored in the cache '{Value}' - do not inserting into JSON.",
                     propertyName, value);
 
                 return;
@@ -36,6 +36,9 @@ namespace HassDeviceBaseWorkers
 
             Cache.Set(key, value, TimeSpan.FromMinutes(30));
             Payload.Add(propertyName, JsonValue.Create(value));
+
+            Logger.LogTrace("Value '{Property}' not in the cache or value not equal to stored in the cache '{Value}' - inserting into JSON.",
+                propertyName, value);
         }
 
         public override string ToString() => Payload.ToString();
