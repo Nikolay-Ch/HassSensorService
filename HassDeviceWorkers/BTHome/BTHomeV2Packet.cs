@@ -7,33 +7,84 @@ namespace BTHomePacketDecoder
 {
     public delegate object Formatter(byte[] rawData, ref int index);
 
-    [AttributeUsage(AttributeTargets.All)]
-    public class BTHObjectAttribute : Attribute
+    public abstract class BTHObjectAttribute(int dataLength, double dataFactor) : Attribute
     {
-        public int DataLength { get; set; }
-        public double DataFactor { get; set; }
+        public int DataLength { get; protected set; } = dataLength;
+        public double DataFactor { get; protected set; } = dataFactor;
 
-        public object? GetData(byte[] rawData, ref int index)
+        public virtual object GetData(byte[] rawData, ref int index)
         {
             var data = rawData[index..(index + DataLength)];
             index += DataLength;
 
-            switch (DataLength)
-            {
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                    Array.Resize(ref data, 4);
-                    var val = BitConverter.ToInt32(data);
+            return data;
+        }
+    }
 
-                    if (DataFactor != 1)
-                        return val * (decimal)DataFactor;
+    public abstract class NumericBTHObjectAttribute(int dataLength, double dataFactor) : BTHObjectAttribute(dataLength, dataFactor)
+    {
+        public override object GetData(byte[] rawData, ref int index)
+        {
+            var val = InnerGetData((byte[])base.GetData(rawData, ref index));
 
-                    return val;
-            }
+            if (DataFactor != 1)
+                return Convert.ToDecimal(val) * (decimal)DataFactor;
 
-            return null;
+            return val;
+        }
+
+        protected abstract object InnerGetData(byte[] arr);
+    }
+
+    [AttributeUsage(AttributeTargets.All)]
+    public class BTHObjectUnsigned8() : NumericBTHObjectAttribute(1, 1)
+    {
+        protected override object InnerGetData(byte[] data) => data[0];
+    }
+
+    [AttributeUsage(AttributeTargets.All)]
+    public class BTHObjecInt8tAttribute() : NumericBTHObjectAttribute(1, 1)
+    {
+        protected override object InnerGetData(byte[] data) => (sbyte)data[0];
+    }
+
+    [AttributeUsage(AttributeTargets.All)]
+    public class BTHObjectUnsigned16() : NumericBTHObjectAttribute(2, 1)
+    {
+        protected override object InnerGetData(byte[] data)
+        {
+            var val = BitConverter.ToUInt16(data);
+            return val;
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.All)]
+    public class BTHObjectInt16Attribute() : NumericBTHObjectAttribute(2, 1)
+    {
+        protected override object InnerGetData(byte[] data)
+        {
+            var val = BitConverter.ToInt16(data);
+            return val;
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.All)]
+    public class BTHObjectRealFromSigned16(double dataFactor) : NumericBTHObjectAttribute(2, dataFactor)
+    {
+        protected override object InnerGetData(byte[] data)
+        {
+            var val = BitConverter.ToInt16(data);
+            return val;
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.All)]
+    public class BTHObjectRealFromUnsigned16(double dataFactor) : NumericBTHObjectAttribute(2, dataFactor)
+    {
+        protected override object InnerGetData(byte[] data)
+        {
+            var val = BitConverter.ToUInt16(data);
+            return val;
         }
     }
 
@@ -46,19 +97,19 @@ namespace BTHomePacketDecoder
 
     public enum BTHomeObjectId
     {
-        [BTHObject(DataLength = 1, DataFactor = 1)]
+        [BTHObjectUnsigned8]
         PacketId = 0x00,
 
-        [BTHObject(DataLength = 1, DataFactor = 1)]
+        [BTHObjectUnsigned8]
         Battery = 0x01,
 
-        [BTHObject(DataLength = 2, DataFactor = 0.01)]
+        [BTHObjectRealFromSigned16(0.01)]
         Temperature = 0x02,
 
-        [BTHObject(DataLength = 2, DataFactor = 0.01)]
+        [BTHObjectRealFromUnsigned16(0.01)]
         Humidity = 0x03,
 
-        [BTHObject(DataLength = 2, DataFactor = 0.001)]
+        [BTHObjectRealFromUnsigned16(0.001)]
         Voltage = 0x0c
     }
 
