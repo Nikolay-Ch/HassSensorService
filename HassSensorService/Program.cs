@@ -59,7 +59,7 @@ namespace HassSensorService
 
         public static IHostBuilder CreateHostBuilder(string[] args, List<string> loadedWorkers) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureAppConfiguration((ctx, cfg)=>
+                .ConfigureAppConfiguration((ctx, cfg) =>
                 {
                     var env = ctx.HostingEnvironment;
 
