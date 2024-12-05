@@ -91,22 +91,9 @@ namespace HassSensorService
                     services.Configure<MqttConfiguration>(hostContext.Configuration.GetSection(nameof(MqttConfiguration)));
                     services.Configure<WorkersConfiguration>(hostContext.Configuration.GetSection(nameof(WorkersConfiguration)));
                     services.Configure<ModbusGatewayConfiguration>(hostContext.Configuration.GetSection(nameof(ModbusGatewayConfiguration)));
-                    services.AddSingleton(typeof(IMqttClientForMultipleSubscribers), typeof(MqttClientForMultipleSubscribers));
+                    services.AddSingleton<IMqttClientForMultipleSubscribers, MqttClientForMultipleSubscribers>();
 
                     // get all workers
-                    /*var workers = hostContext
-                        .Configuration
-                        .GetSection("Workers")
-                        .GetChildren()
-                        .Where(e => e.GetChildren().First().Key != null)
-                        .Select(workerConfig => new
-                        {
-                            workerType = workerConfig.Key ?? "",
-                            workerParams = workerConfig
-                                .GetChildren()
-                                .ToDictionary(e => e.Key, e => e.Value)
-                        });*/
-
                     var workers = hostContext
                         .Configuration
                         .GetSection("Workers")

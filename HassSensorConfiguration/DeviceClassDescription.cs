@@ -186,8 +186,8 @@ namespace HassSensorConfiguration
     public static class DeviceClassDescriptionExtensions
     {
         //public static IHassComponent CreateEnumComponentFromDescription(
-            //this DeviceClassDescription description,
-            //IEnumerable<string> options) =>
-            //new() { }
+        //this DeviceClassDescription description,
+        //IEnumerable<string> options) =>
+        //new() { }
     }
 }

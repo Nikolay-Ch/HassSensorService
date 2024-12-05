@@ -34,15 +34,15 @@ namespace HassDeviceWorkers
                 Manufacturer = "Wangzi",
                 ViaDevice = WorkersConfiguration.ServiceName,
                 Identifiers = [DeviceId],
-                Connections = [new() { "mac", DeviceId }]
+                Connections = [["mac", DeviceId]]
             };
 
-            ComponentList.AddRange(new List<IHassComponent>
-            {
+            ComponentList.AddRange(
+            [
                 sensorFactory.CreateComponent(new AnalogSensorDescription {DeviceClassDescription = DeviceClassDescription.TemperatureCelsius, Device = device }),
                 sensorFactory.CreateComponent(new AnalogSensorDescription {DeviceClassDescription = DeviceClassDescription.Humidity, Device = device }),
                 sensorFactory.CreateComponent(new AnalogSensorDescription {DeviceClassDescription = DeviceClassDescription.IlluminanceLux, Device = device }),
-            });
+            ]);
         }
 
         protected override async Task SendWorkerHeartBeat(ModbusRegisterReader mrr)

@@ -99,7 +99,7 @@ namespace HassDeviceWorkers
             //SensorsList.Add(sensorFactory.CreateSensor(
             //    new DeviceClassDescription { DeviceClass = null, ValueName = "mem", UnitOfMeasures = "Mb" },
             //    device: Device, sensorName: "MEM_Usage", uniqueId: $"{Environment.MachineName}-MEM-Usage"));
-            
+
             //SensorsList.Add(sensorFactory.CreateSensor(
             //    new DeviceClassDescription { DeviceClass = null, ValueName = "disk", UnitOfMeasures = "Mb" },
             //    device: Device, sensorName: "Disk_Usage", uniqueId: $"{Environment.MachineName}-Disk-Usage"));
@@ -177,7 +177,7 @@ namespace HassDeviceWorkers
         private static IEnumerable<ThermalZone> GetOsTemperatureSensors()
         {
             if (Environment.OSVersion.Platform != PlatformID.Unix)
-                return Enumerable.Empty<ThermalZone>();
+                return [];
 
             return Directory
                 .EnumerateDirectories(ThermalZonesPath, "thermal_zone*")
@@ -186,7 +186,7 @@ namespace HassDeviceWorkers
                     Id = IdRegex().Match(e).Value,
                     Path = e,
                     Type = new FileInfo(Path.Combine(e, "type")).OpenText().ReadLine() ?? ""
-                }); 
+                });
         }
 
         /// <summary>

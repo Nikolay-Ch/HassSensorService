@@ -77,11 +77,11 @@ namespace HassMqttIntegration
 
             Logger.LogInformation("Creating MqttClient done at: {time}", DateTimeOffset.Now);
         }
-            
+
         // receive messaged from all subscribed topics
         private async Task MessageReceive(MqttApplicationMessageReceivedEventArgs e)
         {
-            foreach(var topicSubscribers in Subscribers)
+            foreach (var topicSubscribers in Subscribers)
             {
                 // call each subscriber, that topic correspond to received message topic
                 var pattern = "^" + topicSubscribers.Key.Replace("+", ".*") + "$";

@@ -35,8 +35,8 @@ namespace HassDeviceWorkers
                 Connections = [["mac", DeviceId]]
             };
 
-            ComponentList.AddRange(new List<IHassComponent>
-            {
+            ComponentList.AddRange(
+            [
                 sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = new(DeviceClassDescription.Voltage) { ValueName = "ph1_volt" }, Device = device }),
                 sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = new(DeviceClassDescription.Voltage) { ValueName = "ph2_volt" }, Device = device }),
                 sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = new(DeviceClassDescription.Voltage) { ValueName = "ph3_volt" }, Device = device }),
@@ -45,7 +45,7 @@ namespace HassDeviceWorkers
                 sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = new(DeviceClassDescription.Voltage) { ValueName = "ln31_volt" }, Device = device }),
                 sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = DeviceClassDescription.FrequencyHz, Device = device }),
                 sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = new(DeviceClassDescription.Voltage) { ValueName = "unb_volt" }, Device = device })
-            });
+            ]);
         }
 
         protected override async Task SendWorkerHeartBeat(ModbusRegisterReader mrr)

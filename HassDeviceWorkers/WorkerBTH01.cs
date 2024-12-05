@@ -44,13 +44,13 @@ namespace HassDeviceWorkers
                 Connections = [["mac", DeviceId]]
             };
 
-            ComponentList.AddRange(new List<IHassComponent>
-            {
+            ComponentList.AddRange(
+            [
                 sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = DeviceClassDescription.TemperatureCelsius, Device = device }),
                 sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = DeviceClassDescription.Humidity, Device = device }),
                 sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = DeviceClassDescription.Battery, Device = device }),
                 sensorFactory.CreateComponent(new AnalogSensorDescription { DeviceClassDescription = DeviceClassDescription.Voltage, Device = device }),
-            });
+            ]);
         }
 
         protected override async Task PostSendConfigurationAsync(CancellationToken stoppingToken)

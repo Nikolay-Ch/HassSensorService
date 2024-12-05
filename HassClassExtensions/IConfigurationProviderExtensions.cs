@@ -6,7 +6,7 @@ namespace HassSensorServiceExtensions
     {
         public static HashSet<string> GetFullKeyNames(this IConfigurationProvider provider, string? rootKey, HashSet<string> initialKeys)
         {
-            foreach (var key in provider.GetChildKeys(Enumerable.Empty<string>(), rootKey))
+            foreach (var key in provider.GetChildKeys([], rootKey))
             {
                 string surrogateKey = key;
                 if (rootKey != null)

@@ -35,7 +35,7 @@ namespace HassDeviceWorkers.HPiLO4DataReader.DTO
 
             Processors = hostData
                 .GetDataArray(4, "Label", "Speed", "Execution Technology", "Memory Technology")
-                .Select(e=>new Processor
+                .Select(e => new Processor
                 {
                     Name = e["Label"],
                     Speed = e["Speed"],

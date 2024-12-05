@@ -60,7 +60,7 @@ namespace HassDeviceWorkers
 
             DeviceId = hostData.SerialNumber;
 
-            List<string> healthStatuses = [..Enum.GetNames(typeof(HealthStatus))];
+            List<string> healthStatuses = [.. Enum.GetNames<HealthStatus>()];
             ComponentList.AddRange(
             [
                 sensorFactory.CreateEnumComponent(device, "HealthBiosHardware", healthStatuses, "mdi:list-status"),
@@ -158,7 +158,7 @@ namespace HassDeviceWorkers
         }
 
         private async Task SendWorkerHeartBeat()
-         {
+        {
             try
             {
                 var attributes = new Dictionary<string, JsonCachedPayload>();
@@ -171,7 +171,7 @@ namespace HassDeviceWorkers
                 AddTemperaturePayload(healthData.Temperatures, payload, attributes);
                 AddPowerSupplyPayload(healthData.PowerSupplies, payload, attributes);
                 AddFansPayload(healthData.Fans, payload, attributes);
-                AddServerUptimePayload(healthData.ServerUptime , payload);
+                AddServerUptimePayload(healthData.ServerUptime, payload);
 
                 // send message for state
                 await SendDeviceInformation(ComponentList[0].StateTopic, payload);
@@ -239,14 +239,14 @@ namespace HassDeviceWorkers
 
         private void AddFansPayload(IEnumerable<Fan> fans, JsonCachedPayload payload, Dictionary<string, JsonCachedPayload> attributes)
         {
-            foreach(var fan in fans)
+            foreach (var fan in fans)
             {
                 var fanUniqueId = ClearSensorName(fan.Label, "fan");
                 if (fanUniqueId == null)
                     continue;
 
-                var componentId = ComponentList.First(e=>e.Name == fan.Label);
-                if(componentId == null)
+                var componentId = ComponentList.First(e => e.Name == fan.Label);
+                if (componentId == null)
                     continue;
 
                 payload.CachedAdd(fanUniqueId, fan.SpeedInPercent);

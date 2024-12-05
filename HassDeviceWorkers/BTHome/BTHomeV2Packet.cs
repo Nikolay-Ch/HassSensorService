@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace BTHomePacketDecoder
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 {
     public delegate object Formatter(byte[] rawData, ref int index);
 
@@ -118,7 +120,7 @@ namespace BTHomePacketDecoder
         public int Version { get; }
         public List<(BTHomeObjectId objectId, object value)> Values { get; } = [];
 
-        public object this[BTHomeObjectId index] => Values.First(e=>e.objectId == index).value;
+        public object this[BTHomeObjectId index] => Values.First(e => e.objectId == index).value;
 
         public BTHomeV2Packet(byte[] rawData)
         {
