@@ -1,8 +1,7 @@
-﻿using HassDeviceWorkers.ModBus;
-using System;
+﻿using System;
 using System.Linq;
 
-namespace HassDeviceWorkers
+namespace HassDeviceWorkers.ModBus
 {
     public class RsGzwsN01(byte[] rawModBusData)
     {

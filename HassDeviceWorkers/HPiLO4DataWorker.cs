@@ -9,7 +9,6 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,7 +17,7 @@ namespace HassDeviceWorkers
     /// <summary>
     /// Send HP Gen8 iLO4 - metrics to HomeAssistant
     /// </summary>
-    public partial class HPiLO4DataWorker : DeviceBaseWorker<HPiLO4DataWorker>
+    public class HPiLO4DataWorker : DeviceBaseWorker<HPiLO4DataWorker>
     {
         public int SendTimeout { get; set; } = 30000;
         public ILO4DataReader ILO4DataReader { get; }
@@ -259,13 +258,8 @@ namespace HassDeviceWorkers
             }
         }
 
-        private void AddServerUptimePayload(DateTime serverUptime, JsonCachedPayload payload)
-        {
+        private void AddServerUptimePayload(DateTime serverUptime, JsonCachedPayload payload) =>
             payload.CachedAdd("Uptime", serverUptime);
-        }
-
-        [GeneratedRegex(@"\d+$")]
-        private static partial Regex IdRegex();
 
         private static string ClearSensorName(string sensorName, string sensorPostfix) =>
             $"sensor_{sensorName.Replace(" ", "").Replace("-", "")}_{sensorPostfix}";

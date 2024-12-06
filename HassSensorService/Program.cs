@@ -1,7 +1,7 @@
+using HassClassExtensions;
 using HassDeviceBaseWorkers;
 using HassDeviceWorkers.ModBus;
 using HassMqttIntegration;
-using HassSensorServiceExtensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

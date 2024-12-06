@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 
-namespace HassSensorServiceExtensions
+namespace HassClassExtensions
 {
     public static class IConfigurationProviderExtensions
     {
@@ -14,7 +14,7 @@ namespace HassSensorServiceExtensions
                     surrogateKey = rootKey + ":" + key;
                 }
 
-                GetFullKeyNames(provider, surrogateKey, initialKeys);
+                provider.GetFullKeyNames(surrogateKey, initialKeys);
 
                 if (!initialKeys.Any(k => k.StartsWith(surrogateKey)))
                 {
