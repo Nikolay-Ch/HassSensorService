@@ -1,9 +1,9 @@
 #See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-FROM mcr.microsoft.com/dotnet/runtime:8.0-jammy-chiseled AS base
+FROM mcr.microsoft.com/dotnet/runtime:9.0-noble-chiseled AS base
 WORKDIR /app
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0-jammy AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0.101-noble AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["Directory.Build.props", "."]
@@ -20,8 +20,8 @@ WORKDIR "/src/HassSensorService"
 RUN dotnet build "./HassSensorService.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
-RUN addgroup --gid 1638 sensor_service
-RUN adduser --uid 1638 -gid 1638 sensor_service
+RUN groupadd -g 1638 sensor_service
+RUN useradd -u 1638 -g 1638 sensor_service
 
 ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "./HassSensorService.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
